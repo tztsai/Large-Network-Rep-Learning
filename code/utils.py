@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 
 
 def read_file(file_name):
+    """
+    Read a graph from a txt file. Each line of the txt file is an edge.
+    """
     print("Reading file...")
     data = []
     with open(file_name, 'r') as f:
@@ -21,11 +24,22 @@ def read_file(file_name):
             print("Failed to read %s." % file_name)
 
 def process_data(data):
-    V = None
-    E = None
+    """
+    Return the set of vertices and edges.
+    :type V: set
+    :type E: 2-d np array
+    """
+    print("Processing data...")
+    V = set()
+    for edge in data:
+        V.add(edge[0])
+        V.add(edge[1])
+    E = data
+    print("Data processing completed.")
     return V, E
 
 
 if __name__ == "__main__":
     data = read_file("sample_data.txt")
+    process_data(data)
 

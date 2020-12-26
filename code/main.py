@@ -10,10 +10,11 @@ FILE_NAME = "sample_data.txt"
 
 def main():
     data = read_file(FILE_NAME)
-    V, E = process_data(data)
+    V, E = process_data(data) # V: set, E: 2-d np array
 
     # Instancing DeepWalk class
     dw = DeepWalk(data)
+    # dw = DeepWalk(V, E)
     dw_result = dw.deep_walk()
     # TODO: visualize the results
 
