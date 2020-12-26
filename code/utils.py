@@ -38,6 +38,9 @@ def process_data(data):
     print("Data processing completed.")
     return V, E
 
+def visualize_result(result):
+    pass
+
 
 if __name__ == "__main__":
     data = read_file("sample_data.txt")
