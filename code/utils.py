@@ -20,6 +20,11 @@ def read_file(file_name):
         except:
             print("Failed to read %s." % file_name)
 
+def process_data(data):
+    V = None
+    E = None
+    return V, E
+
 
 if __name__ == "__main__":
     data = read_file("sample_data.txt")

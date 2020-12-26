@@ -10,6 +10,7 @@ FILE_NAME = "sample_data.txt"
 
 def main():
     data = read_file(FILE_NAME)
+    V, E = process_data(data)
 
     # Instancing DeepWalk class
     dw = DeepWalk(data)
