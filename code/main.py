@@ -1,23 +1,42 @@
-import os, sys, time, itertools
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+from utils import *
+from DeepWalk import DeepWalk
+from Node2vec import Node2vec
+from Line_1 import Line_1
+from NetMF import NetMF
+from GraphSage import GraphSage
 
-# Global 
-NORMALIZE = True
+# Global                                                                          
+FILE_NAME = "sample_data.txt"
 
-# Parameters
-K = 2
+def main():
+    data = read_file(FILE_NAME)
 
-class Method():
-    def __init__(self):
-        pass
+    # Instancing DeepWalk class
+    dw = DeepWalk()
+    dw_result = dw.deep_walk()
+    # TODO: visualize the results
 
-    def read_data(self):
-        pass
+    # Instancing Node2vec class
+    n2v = Node2vec()
+    n2v_result = n2v.main()
+    # TODO: visualize the results
+
+    # Instancing Line_1 class
+    l1 = Line_1()
+    l1_result = l1.main()
+    # TODO: visualize the results
+
+    # Instancing NetMF class
+    nmf = NetMF()
+    nmf_result = nmf.main()
+    # TODO: visualize the results
+
+    # Instancing GraphSage class
+    gs = GraphSage()
+    gs_result = gs.main()
+    # TODO: visualize the results
+
 
 if __name__ == "__main__":
-    start = time.time()
-    end = time.time()
-    print("Total time cost in seconds: ", round(end - start,3))
+    main()
 
