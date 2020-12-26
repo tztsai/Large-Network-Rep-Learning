@@ -7,8 +7,8 @@ PARAMETER_gamma = 1 # walks per vertex
 PARAMETER_t = 1 # walk length
 
 class DeepWalk():
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        self.data = data
 
     def deep_walk(self):
         pass

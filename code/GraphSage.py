@@ -4,13 +4,13 @@ import numpy as np
 PARAMETER_w = 1 # window size
 
 class GraphSage():
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        self.data = data
 
-    def main(self):
+    def graph_sage(self):
         pass
 
 if __name__ == "__main__":
     gs = GraphSage()
-    gs.main()
+    gs.graph_sage()
 

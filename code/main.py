@@ -12,7 +12,7 @@ def main():
     data = read_file(FILE_NAME)
 
     # Instancing DeepWalk class
-    dw = DeepWalk()
+    dw = DeepWalk(data)
     dw_result = dw.deep_walk()
     # TODO: visualize the results
 
@@ -32,8 +32,8 @@ def main():
     # TODO: visualize the results
 
     # Instancing GraphSage class
-    gs = GraphSage()
-    gs_result = gs.main()
+    gs = GraphSage(data)
+    gs_result = gs.graph_sage()
     # TODO: visualize the results
 
 
