@@ -17,7 +17,7 @@ class Graph:
 
     def __init__(self, edges, directed=False):
         self.directed = directed
-        self.context = {}   # dict of node context
+        self.context = {}  # dict of node context
 
         encode = {}  # encode nodes from 0 to #nodes-1
 
@@ -48,7 +48,7 @@ class Graph:
         self.num_edges = sum(len(ctx) for ctx in self.context.values())
         if not self.directed: self.num_edges //= 2
 
-        graph_logger.debug('Constructed a%s graph (V=%d, E=%d)'
+        graph_logger.debug('Constructed a%s graph (V=%d, E=%d).'
                            % (' directed' if directed else 'n undirected',
                               self.num_nodes, self.num_edges))
 
@@ -64,6 +64,38 @@ class Graph:
         else:
             raise TypeError('invalid index type')
         
+    def rand_neighbor(self, node, pi=None):
+        """
+        Sample a random neighbor of the node.
+
+        Args:
+            node: the starting node
+            pi (list): the sampling probability distribution
+
+        Returns:
+            a random neighbor node
+        """
+        neighbors = list(self[node])
+        return np.random.choice(neighbors, p=pi)
+    
+    def second_order_bias(self, e, p, q):
+        """
+        The 2nd order search bias used in node2vec.
+
+        Args:
+            e (2-tuple): the previous traversed edge
+            p: "walk back" parameter
+            q: "walk away" parameter
+        """
+        u, v = e
+        for x in self[v]:
+            if x == u:  # walk back
+                return 1/p
+            elif v in self[u]:
+                return 1
+            else:
+                return 1/q
+        
     def to_array(self):
         return np.array([[self[i, j] for j in range(self.num_nodes)]
                          for i in range(self.num_nodes)])
@@ -76,7 +108,7 @@ def read_graph(filename, **graph_type):
                  for line in f.readlines())
     graph = Graph(edges, **graph_type)
     t1 = time()
-    graph_logger.debug('Successfully read graph from "%s". Time: %.2fms'
+    graph_logger.debug('Successfully read graph from "%s" (time: %.2fms).'
                        % (filename, (t1 - t0) * 1000))
     return graph
 
