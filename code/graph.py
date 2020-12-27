@@ -3,6 +3,8 @@
 import logging
 import random
 import numpy as np
+import scipy as sp
+from scipy.sparse import issparse, csr_matrix
 from time import time
 from collections import defaultdict
 
@@ -13,12 +15,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Graph:
 
-    def __init__(self, edges, directed=False, weighted=False):
+    def __init__(self, edges, directed=False):
         self.directed = directed
-        self.weighted = weighted
+        self.context = {}   # dict of node context
 
         encode = {}  # encode nodes from 0 to #nodes-1
-        graph = {}  # graph dict
 
         for edge in edges:
             try:
@@ -33,43 +34,39 @@ class Graph:
             for n in [u, v]:
                 if n not in encode:
                     i = encode[n] = len(encode)
-                    if self.weighted:
-                        graph[i] = defaultdict(float)
-                    else:
-                        graph[i] = set()
+                    self.context[i] = defaultdict(float)
 
             i, j = encode[u], encode[v]
 
-            if weighted:
-                graph[i][j] += w
-                if not self.directed:
-                    graph[j][i] += w
-            else:
-                graph[i].add(j)
-                if not self.directed:
-                    graph[j].add(i)
+            self.context[i][j] += w
+            if not self.directed:
+                self.context[j][i] += w
 
         self.num_nodes = len(encode)
         self.nodes = range(self.num_nodes)
 
-        self.adjacency = self.__compute_adjacency(graph)
-
-        self.num_edges = np.count_nonzero(self.adjacency)
+        self.num_edges = sum(len(ctx) for ctx in self.context.values())
         if not self.directed: self.num_edges //= 2
 
-        self.context = {v: tuple(ctx) for v, ctx in graph.items()}
-
-        graph_logger.debug('Constructed a%s %s graph (V=%d, E=%d)'
+        graph_logger.debug('Constructed a%s graph (V=%d, E=%d)'
                            % (' directed' if directed else 'n undirected',
-                              'weighted' if weighted else 'unweighted',
                               self.num_nodes, self.num_edges))
 
-    def __compute_adjacency(self, graph):
-        A = np.zeros((self.num_nodes, self.num_nodes))
-        for i in graph:
-            for j in graph[i]:
-                A[i, j] = graph[i][j] if self.weighted else 1
-        return A
+    def __getitem__(self, idx):
+        if type(idx) is int:
+            return self.context[idx]
+        elif type(idx) is tuple and len(idx) == 2:
+            i, j = idx
+            if j in self.context[i]:
+                return self.context[i][j]
+            else:
+                return 0
+        else:
+            raise TypeError('invalid index type')
+        
+    def to_array(self):
+        return np.array([[self[i, j] for j in range(self.num_nodes)]
+                         for i in range(self.num_nodes)])
 
 
 def read_graph(filename, **graph_type):
@@ -87,6 +84,6 @@ def read_graph(filename, **graph_type):
 if __name__ == "__main__":
     edges = [(1, 2), (2, 3), (3, 1), (2, 4), (2, 1), (3, 4)]
     g = Graph(edges)
-    print(g.adjacency)
+    print(g.to_array())
 
     G = read_graph('small_sample.txt')
