@@ -16,6 +16,8 @@ PARAMETER_ed = 128 # embedding dimension
 class NetMF():
     def __init__(self, graph: Graph):
         self.G = graph
+        self.T = PARAMETER_T
+        self.b = PARAMETER_b
 
     def get_adjacency_matrix(self, G):
         A = np.zeros((G.num_nodes, G.num_nodes))
@@ -32,22 +34,34 @@ class NetMF():
         D = np.diag(D)
         return D
 
-    def NetMF_small_T(self):
+    def NetMF_small_T(self, G):
         # compute adjacency matrix A
         A = self.get_adjacency_matrix(self.G)
 
         # compute degree matrix D
         D = self.get_degree_matrix(self.G)
 
-        # compute P
-
         # step 1
+        P_0 = np.dot(np.linalg.inv(D), A)
+        P = []
+        for i in range(1, self.T+1):
+            P.append(np.linalg.matrix_power(P_0, i))
+        P = np.array(P)
 
         # step 2
+        vol_G = np.sum(A)
+        sum_P = np.zeros((G.num_nodes, G.num_nodes))
+        for mat in P:
+            sum_P += mat
+        const = vol_G / (self.b * self.T)
+        M = const * np.dot(sum_P, np.linalg.inv(D))
 
         # step 3
+        M_prime = np.maximum(M, 1)
 
         # step 4
+            
+        # step 5
 
     def NetMF_large_T(self):
         pass
@@ -56,6 +70,6 @@ if __name__ == "__main__":
     #g = read_graph('small.txt')
     g = read_graph('small_undirected_weighted.txt')
     nmf = NetMF(g)
-    nmf.NetMF_small_T()
+    nmf.NetMF_small_T(g)
     nmf.NetMF_large_T()
 
