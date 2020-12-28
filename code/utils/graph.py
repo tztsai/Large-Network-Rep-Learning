@@ -3,13 +3,9 @@
 import logging
 import random
 import numpy as np
-import scipy as sp
-from scipy.sparse import issparse, csr_matrix
 from time import time
-from collections import defaultdict
 
 graph_logger = logging.getLogger('Graph')
-
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -17,7 +13,7 @@ class Graph:
 
     def __init__(self, edges, directed=False):
         self.directed = directed
-        self.context = {}  # dict of node context
+        self.neighbors = {}  # dict of node context
 
         encode = {}  # encode nodes from 0 to #nodes-1
 
@@ -34,18 +30,18 @@ class Graph:
             for n in [u, v]:
                 if n not in encode:
                     i = encode[n] = len(encode)
-                    self.context[i] = defaultdict(float)
+                    self.neighbors[i] = {}
 
             i, j = encode[u], encode[v]
 
-            self.context[i][j] += w
+            self.neighbors[i][j] = self.neighbors[i].get(j, 0) + w
             if not self.directed:
-                self.context[j][i] += w
+                self.neighbors[j][i] = self.neighbors[j].get(i, 0) + w
 
         self.num_nodes = len(encode)
         self.nodes = range(self.num_nodes)
 
-        self.num_edges = sum(len(ctx) for ctx in self.context.values())
+        self.num_edges = sum(len(nbs) for nbs in self.neighbors.values())
         if not self.directed: self.num_edges //= 2
 
         graph_logger.debug('Constructed a%s graph (V=%d, E=%d).'
@@ -54,11 +50,11 @@ class Graph:
 
     def __getitem__(self, idx):
         if type(idx) is int:
-            return self.context[idx]
+            return self.neighbors[idx]
         elif type(idx) is tuple and len(idx) == 2:
             i, j = idx
-            if j in self.context[i]:
-                return self.context[i][j]
+            if j in self.neighbors[i]:
+                return self.neighbors[i][j]
             else:
                 return 0
         else:
@@ -115,7 +111,8 @@ def read_graph(filename, **graph_type):
 
 if __name__ == "__main__":
     edges = [(1, 2), (2, 3), (3, 1), (2, 4), (2, 1), (3, 4)]
-    g = Graph(edges)
+    g = Graph(edges, directed=True)
+    print(g.neighbors)
     print(g.to_array())
 
-    G = read_graph('small_sample.txt')
+    G = read_graph('../small.txt')
