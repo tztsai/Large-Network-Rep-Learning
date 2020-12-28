@@ -72,6 +72,7 @@ class Graph:
             a random neighbor node
         """
         neighbors = list(self[node])
+        pi = np.array(pi) / np.sum(pi)  # normalized array
         return np.random.choice(neighbors, p=pi)
     
     def second_order_bias(self, e, p, q):
