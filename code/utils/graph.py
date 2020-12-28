@@ -116,4 +116,4 @@ if __name__ == "__main__":
     print(g.neighbors)
     print(g.to_array())
 
-    G = read_graph('../small.txt')
+    G = read_graph('../sample_data.txt')

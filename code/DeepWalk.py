@@ -1,7 +1,9 @@
 import random
 import numpy as np
-import torch as tc
+import torch
+from torch.nn.functional import log_softmax
 from utils.graph import Graph, read_graph
+from utils.tree import Tree
 import config
 
 
@@ -12,6 +14,7 @@ class DeepWalk:
     def __init__(self, graph: Graph):
         self.G = graph
         self.N = graph.num_nodes
+        self.T = Tree(graph.nodes)
         self.D = config.D
         self.Z = np.random.rand((self.N, self.D))
 
