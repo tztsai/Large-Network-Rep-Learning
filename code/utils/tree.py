@@ -117,3 +117,8 @@ if __name__ == '__main__':
     ht.build_from_graph(g)
     ht.print()
     print(ht.code(1), ht.code(2), ht.code(3), ht.code(1))
+
+    ht2 = HuffmanTree()
+    ht2.build_from_nodes(enumerate([2,4,1,6,5,7,3,0]))
+    ht2.print()
+    print([ht2.code(i) for i in range(8)])

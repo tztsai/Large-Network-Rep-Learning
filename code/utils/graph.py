@@ -50,16 +50,16 @@ class Graph:
                               self.num_nodes, self.num_edges))
 
     def __getitem__(self, idx):
-        if type(idx) is int:
+        try:
             return self.neighbors[idx]
-        elif type(idx) is tuple and len(idx) == 2:
-            i, j = idx
-            if j in self.neighbors[i]:
-                return self.neighbors[i][j]
-            else:
-                return 0
-        else:
-            raise TypeError('invalid index type')
+        except (IndexError, TypeError):
+            if type(idx) is tuple and len(idx) == 2:
+                i, j = idx
+                if j in self.neighbors[i]:
+                    return self.neighbors[i][j]
+                else:
+                    return 0
+            else: raise
         
     def rand_neighbor(self, node, pi=None):
         """
@@ -73,9 +73,12 @@ class Graph:
             a random neighbor node
         """
         neighbors = list(self[node])
-        pi = np.array(pi) / np.sum(pi)  # normalized array
-        return np.random.choice(neighbors, p=pi)
-    
+        if pi:
+            pi = np.array(pi) / np.sum(pi)  # normalized array
+            return np.random.choice(neighbors, p=pi)
+        else:
+            return np.random.choice(neighbors)
+
     def second_order_bias(self, e, p, q):
         """
         The 2nd order search bias used in node2vec.
