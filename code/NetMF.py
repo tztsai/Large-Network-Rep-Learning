@@ -115,9 +115,7 @@ class NetMF():
 
 
 if __name__ == "__main__":
-    #g = read_graph('small.txt')
     g = read_graph('small_undirected_weighted.txt')
     nmf = NetMF(g)
     nmf.NetMF_small_T(g)
     nmf.NetMF_large_T(g)
-
