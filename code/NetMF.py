@@ -3,7 +3,7 @@ import numpy as np
 from utils.graph import Graph, read_graph
 
 # Global
-PRINT_RESULT = False
+PRINT_RESULT = True
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
@@ -112,10 +112,10 @@ class NetMF():
 
 
 if __name__ == "__main__":
-    #g = read_graph('small.txt')
-    g = read_graph('small_undirected_weighted.txt')
-    #g = read_graph('../datasets/BlogCatalog.txt')
-    #g = read_graph('../datasets/com-youtube.ungraph.txt')
+    #g = read_graph('./datasets/small.txt')
+    g = read_graph('./datasets/small_undirected_weighted.txt')
+    #g = read_graph('./datasets/BlogCatalog.txt')
+    #g = read_graph('./datasets/com-youtube.ungraph.txt')
     
     nmf = NetMF(g)
     res_small = nmf.NetMF_small_T(g)
