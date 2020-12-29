@@ -1,3 +1,7 @@
+from queue import PriorityQueue
+from graph import Graph
+
+
 class Tree:
     branches = 2
 
@@ -7,19 +11,19 @@ class Tree:
             self.parent = parent
             self.children = []
 
-        def add_child(self, value=None):
+        def add_child(self, child):
             if len(self.children) >= Tree.branches:
                 raise RuntimeError("Reached max number of children.")
-            child = Tree.Node(value, parent=self)
+            if not isinstance(child, Tree.Node):
+                child = Tree.Node(child)
             self.children.append(child)
+            child.parent = self
             return child
 
-    def __init__(self, values=()):
-        """
-        Initialize the tree and its root node;
-        build the tree from the values sequence if it is given.
-        """
+    def __init__(self):
         self.root = Tree.Node()
+
+    def build_from_list(self, values):
         values = iter(values)
         to_visit = [self.root]
         while True:
@@ -49,6 +53,32 @@ class Tree:
             visit_depth = [cur_depth + 1] * len(cur_node.children) + visit_depth
 
 
+class HuffmanTree(Tree):
+    def build_from_nodes(self, weighted_nodes):
+        """
+        Build the Huffman tree from a sequence of weighted nodes so that the higher the weight,
+        the shorter the path from root to the node.
+
+        Args:
+            weighted_nodes: a (node, weight) sequence
+        """
+        pq = PriorityQueue()
+
+        for node, weight in weighted_nodes:
+            pq.put((weight, node))
+
+        while not pq.empty():
+            _, n1 = pq.get()
+            if pq.empty():
+                self.root = n1
+            else:
+                _, n2 = pq.get()
+
+
+    def build_from_graph(self, graph: Graph):
+        self.build_from_nodes((n, len(graph.neighbors[n]) for n in graph.nodes))
+
+
+
 if __name__ == '__main__':
-    t = Tree(range(15))
-    t.print()
+    pass

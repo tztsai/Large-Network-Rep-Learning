@@ -1,7 +1,6 @@
 """ Graph Utilities """
 
 import logging
-import random
 import numpy as np
 from time import time
 
@@ -43,6 +42,8 @@ class Graph:
 
         self.num_edges = sum(len(nbs) for nbs in self.neighbors.values())
         if not self.directed: self.num_edges //= 2
+
+        self.decode = {i: v for v, i in encode.items()}
 
         graph_logger.debug('Constructed a%s graph (V=%d, E=%d).'
                            % (' directed' if directed else 'n undirected',
