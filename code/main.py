@@ -1,9 +1,10 @@
-from utils import *
 from DeepWalk import DeepWalk
 from Node2vec import Node2vec
 from Line_1 import Line_1
 from NetMF import NetMF
 from GraphSage import GraphSage
+from LinkPrediction import LinkPrediction
+from NodeClassification import NodeClassification
 
 # Global                                                                          
 FILE_NAME = "sample_data.txt"
