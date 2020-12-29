@@ -2,9 +2,9 @@ import numpy as np
 from utils.graph import Graph, read_graph
 
 # Parameters for NetMF
-PARAMETER_T = 1 # window size, 10 for option
+PARAMETER_T = 10 # window size, 10 for option
 PARAMETER_b = 20 # number of negative samples
-PARAMETER_h = 256 # number of eigenpairs (rank), 16384 for Flickr
+PARAMETER_h = 3 # number of eigenpairs (rank), 16384 for Flickr, 256 for others
 PARAMETER_ns = 1 # negative sample value, 5 for option
 
 # Parameters for DeepWalk (comparison)
@@ -18,6 +18,7 @@ class NetMF():
         self.G = graph
         self.T = PARAMETER_T
         self.b = PARAMETER_b
+        self.d = PARAMETER_h
 
     def get_adjacency_matrix(self, G):
         A = np.zeros((G.num_nodes, G.num_nodes))
@@ -60,8 +61,13 @@ class NetMF():
         M_prime = np.maximum(M, 1)
 
         # step 4
+        log_M_prime = np.log(M_prime)
+        U, Sigma, V_T = np.linalg.svd(log_M_prime)
+        U_d = U[:, :self.d]
+        Sigma_d = np.diag(Sigma[:self.d])
             
         # step 5
+        return np.dot(U_d, np.sqrt(Sigma_d))
 
     def NetMF_large_T(self):
         pass
