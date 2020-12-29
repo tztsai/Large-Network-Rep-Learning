@@ -1,9 +1,11 @@
+from scipy import linalg
 import numpy as np
 from utils.graph import Graph, read_graph
 
 # Parameters for NetMF
-PARAMETER_T = 10 # window size, 10 for option
+PARAMETER_T = 3 # window size, 10 for option
 PARAMETER_b = 20 # number of negative samples
+PARAMETER_d = 3 # dimension of embedding space
 PARAMETER_h = 3 # number of eigenpairs (rank), 16384 for Flickr, 256 for others
 PARAMETER_ns = 1 # negative sample value, 5 for option
 
@@ -18,7 +20,8 @@ class NetMF():
         self.G = graph
         self.T = PARAMETER_T
         self.b = PARAMETER_b
-        self.d = PARAMETER_h
+        self.d = PARAMETER_d
+        self.h = PARAMETER_h
 
     def get_adjacency_matrix(self, G):
         A = np.zeros((G.num_nodes, G.num_nodes))
@@ -69,13 +72,52 @@ class NetMF():
         # step 5
         return np.dot(U_d, np.sqrt(Sigma_d))
 
-    def NetMF_large_T(self):
-        pass
+    def NetMF_large_T(self, G):
+        # compute adjacency matrix A
+        A = self.get_adjacency_matrix(self.G)
+
+        # compute degree matrix D
+        D = self.get_degree_matrix(self.G)
+
+        # step 1
+        D_prime = np.linalg.inv(np.sqrt(D))
+        Ed =  np.linalg.multi_dot([D_prime, A, D_prime])
+        Lambda, U = linalg.eig(Ed, left=True, right=False)
+        U_h = U[:, :self.h]
+        Lambda_h = np.diag(Lambda[:self.h])
+        Lambda_h = Lambda_h.astype(np.float64)
+
+        # step 2
+        vol_G = np.sum(A)
+        const = vol_G / self.b
+        S = []
+        for i in range(1, self.T+1):
+            S.append(np.linalg.matrix_power(Lambda_h, i))
+        S = np.array(S)
+        sum_S = np.zeros((Lambda_h.shape[0], Lambda_h.shape[1]))
+        for mat in S:
+            sum_S += mat
+        sum_S = sum_S / self.T
+        M_hat = const * np.linalg.multi_dot(
+                [D_prime, U_h, sum_S, np.transpose(U_h), D_prime])
+ 
+        # step 3
+        M_hat_prime = np.maximum(M_hat, 1)
+
+        # step 4
+        log_M_hat_prime = np.log(M_hat_prime)
+        U, Sigma, V_T = np.linalg.svd(log_M_hat_prime)
+        U_d = U[:, :self.d]
+        Sigma_d = np.diag(Sigma[:self.d])
+            
+        # step 5
+        return np.dot(U_d, np.sqrt(Sigma_d))
+
 
 if __name__ == "__main__":
     #g = read_graph('small.txt')
     g = read_graph('small_undirected_weighted.txt')
     nmf = NetMF(g)
     nmf.NetMF_small_T(g)
-    nmf.NetMF_large_T()
+    nmf.NetMF_large_T(g)
 
