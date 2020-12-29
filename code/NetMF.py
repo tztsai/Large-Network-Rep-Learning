@@ -108,12 +108,13 @@ class NetMF():
         Sigma_d = np.diag(Sigma[:self.d])
             
         # step 5
-        return np.dot(U_d, np.sqrt(Sigma_d))
+        return np.dot(U_d, np.sqrt(Sigma_d)).astype(np.float64)
 
 
 if __name__ == "__main__":
     #g = read_graph('./datasets/small.txt')
-    g = read_graph('./datasets/small_undirected_weighted.txt')
+    #g = read_graph('./datasets/small_undirected_weighted.txt')
+    g = read_graph('./datasets/lesmis/lesmis.mtx')
     #g = read_graph('./datasets/BlogCatalog.txt')
     #g = read_graph('./datasets/com-youtube.ungraph.txt')
     
