@@ -2,17 +2,14 @@ from scipy import linalg
 import numpy as np
 from utils.graph import Graph, read_graph
 
-# Parameters for NetMF
-PARAMETER_T = 3 # window size, 10 for option
-PARAMETER_b = 20 # number of negative samples
-PARAMETER_d = 3 # dimension of embedding space
-PARAMETER_h = 3 # number of eigenpairs (rank), 16384 for Flickr, 256 for others
-PARAMETER_ns = 1 # negative sample value, 5 for option
+# Global
+PRINT_RESULT = False
 
-# Parameters for DeepWalk (comparison)
-PARAMETER_wl = 40 # walk length 40
-PARAMETER_nw = 80 # the number of walks starting from each vertex
-PARAMETER_ed = 128 # embedding dimension
+# Parameters for NetMF
+PARAMETER_T = 10 # window size, 1, 10 for option
+PARAMETER_b = 5 # number of negative samples(ns), 1, 5 for option
+PARAMETER_d = 8 # dimension of embedding space
+PARAMETER_h = 256 # number of eigenpairs (rank), 16384 for Flickr, 256 for others
 
 
 class NetMF():
@@ -115,7 +112,15 @@ class NetMF():
 
 
 if __name__ == "__main__":
+    #g = read_graph('small.txt')
     g = read_graph('small_undirected_weighted.txt')
+    #g = read_graph('../datasets/BlogCatalog.txt')
+    #g = read_graph('../datasets/com-youtube.ungraph.txt')
+    
     nmf = NetMF(g)
-    nmf.NetMF_small_T(g)
-    nmf.NetMF_large_T(g)
+    res_small = nmf.NetMF_small_T(g)
+    res_large = nmf.NetMF_large_T(g)
+    if PRINT_RESULT:
+        print(res_small)
+        print("")
+        print(res_large)
