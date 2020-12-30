@@ -2,10 +2,11 @@ import random
 import logging
 import numpy as np
 import torch
+from time import time
 
 from utils.graph import Graph, read_graph
 from utils.huffman import HuffmanTree
-from utils.funcs import pbar
+from utils.funcs import pbar, pmap
 import config
 
 logger = logging.getLogger('DeepWalk')
@@ -14,8 +15,9 @@ logger = logging.getLogger('DeepWalk')
 class DeepWalk:
     wl = 6                  # walk length
     ws = 2                  # window size
-    bs = 64                 # batch size
+    bs = 128                # batch size
     lr = config.ALPHA       # learning rate
+    tau = 0.95              # exponential annealing rate
 
     def __init__(self, graph: Graph):
         self.G = graph
@@ -58,23 +60,24 @@ class DeepWalk:
                     edges.append([w[i], w[j]])
                     
         logger.info('Sampled %d context edges.' % len(edges))
-        return edges
+        return np.array(edges)
 
     def train(self, epochs=100):
         for epoch in range(epochs):
             logger.info('Epoch: %d' % epoch)
+            logger.info('Learning rate = %.2e' % self.lr)
+            
+            start_time = time()
 
             walks = self.sample_walks()
             context = self.context_graph(walks)
             
             self.backprop_loss(context)
-
-            with torch.no_grad():  # SGD
-                self.Z1 -= self.Z1.grad * self.lr
-                self.Z2 -= self.Z2.grad * self.lr
-                self.Z1.grad.zero_()
-                self.Z2.grad.zero_()
-
+            self.anneal()
+            
+            end_time = time()
+            logger.info('Epoch time cost: %d' % (1000 * (end_time - start_time)))
+            
     def log_softmax(self, u, v):
         """log p(u|v) where p is the hierarchical softmax function"""
         lp = torch.tensor(0.)  # log probability
@@ -92,18 +95,32 @@ class DeepWalk:
         logger.info('Computing and back propagating loss...')
         
         total_loss = 0
-        batch_loss = torch.tensor(0.)
+        num_batches = len(context) // self.bs
         
-        for i, (u, v) in enumerate(pbar(context)):
-            loss = -self.log_softmax(v, u)
-            batch_loss += loss
-            total_loss += loss.item()
+        for i in pbar(range(num_batches)):
+            batch_loss = 0
             
-            if i % self.bs == 0:
-                batch_loss.backward()
-                batch_loss.zero_()
+            for u, v in context[i*self.bs : (i+1)*self.bs]:
+                loss = -self.log_softmax(v, u)
+                batch_loss += loss
+                total_loss += loss
+                
+            batch_loss.backward()
+            self.sgd()
             
         logger.info('Loss = %.3e' % total_loss)
+        
+    def sgd(self):
+        """Stochastic gradient descent."""
+        with torch.no_grad():
+            self.Z1 -= self.Z1.grad * self.lr
+            self.Z2 -= self.Z2.grad * self.lr
+            self.Z1.grad.zero_()
+            self.Z2.grad.zero_()
+            
+    def anneal(self):
+        """Learning rate simulated annealing."""
+        self.lr *= self.tau
 
     def similarity(self, u, v):
         with torch.no_grad():
