@@ -20,6 +20,9 @@ class Tree:
             child.parent = self
             return child
 
+        def __lt__(self, other):
+            return self.value < other.value
+
     def __init__(self):
         self.root = Tree.Node()
 
@@ -54,31 +57,68 @@ class Tree:
 
 
 class HuffmanTree(Tree):
+    def __init__(self):
+        super().__init__()
+        self._leaves = {}
+        self._code = {}
+
     def build_from_nodes(self, weighted_nodes):
         """
         Build the Huffman tree from a sequence of weighted nodes so that the higher the weight,
         the shorter the path from root to the node.
 
         Args:
-            weighted_nodes: a (node, weight) sequence
+            weighted_nodes: a (value, weight) sequence
         """
         pq = PriorityQueue()
 
-        for node, weight in weighted_nodes:
-            pq.put((weight, node))
+        for v, w in weighted_nodes:
+            node = Tree.Node((v, w))
+            pq.put((w, node))
+            self._leaves[v] = node
 
         while not pq.empty():
-            _, n1 = pq.get()
+            w1, n1 = pq.get()
             if pq.empty():
                 self.root = n1
             else:
-                _, n2 = pq.get()
-
+                w2, n2 = pq.get()
+                w = w1 + w2
+                n = Tree.Node((-1, w))
+                n.add_child(n1)
+                n.add_child(n2)
+                pq.put((w, n))
 
     def build_from_graph(self, graph: Graph):
-        self.build_from_nodes((n, len(graph.neighbors[n]) for n in graph.nodes))
+        self.build_from_nodes((n, sum(graph.neighbors[n].values()))
+                              for n in graph.nodes)
 
+    def code(self, value):
+        if value in self._code:
+            return self._code[value]
+
+        c = ''
+        node = self._leaves[value]
+        while node is not self.root:
+            parent = node.parent
+            c = str(parent.children.index(node)) + c
+            node = parent
+
+        self._code[value] = c
+        self._leaves.pop(value)  # no longer needed
+        return c
 
 
 if __name__ == '__main__':
-    pass
+    from graph import read_graph
+    g = read_graph("small.txt")
+    print([(n, sum(g.neighbors[n].values())) for n in g.nodes])
+    ht = HuffmanTree()
+    ht.build_from_graph(g)
+    ht.print()
+    print(ht.code(1), ht.code(2), ht.code(3), ht.code(1))
+
+    ht2 = HuffmanTree()
+    ht2.build_from_nodes(enumerate([2,4,1,6,5,7,3,0]))
+    ht2.print()
+    print([ht2.code(i) for i in range(8)])

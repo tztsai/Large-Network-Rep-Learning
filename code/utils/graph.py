@@ -5,8 +5,7 @@ import numpy as np
 from time import time
 import numpy.random as npr
 
-graph_logger = logging.getLogger('Graph')
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('Graph')
 
 
 class Graph:
@@ -46,21 +45,20 @@ class Graph:
 
         self.decode = {i: v for v, i in encode.items()}
 
-        graph_logger.debug('Constructed a%s graph (V=%d, E=%d).'
-                           % (' directed' if directed else 'n undirected',
-                              self.num_nodes, self.num_edges))
+        logger.debug(f"Constructed a{' directed' if directed else 'n undirected'}"
+                     f" graph (V={self.num_nodes}, E={self.num_edges}).")
 
     def __getitem__(self, idx):
-        if type(idx) is int:
+        try:
             return self.neighbors[idx]
-        elif type(idx) is tuple and len(idx) == 2:
-            i, j = idx
-            if j in self.neighbors[i]:
-                return self.neighbors[i][j]
-            else:
-                return 0
-        else:
-            raise TypeError('invalid index type')
+        except (IndexError, TypeError):
+            if type(idx) is tuple and len(idx) == 2:
+                i, j = idx
+                if j in self.neighbors[i]:
+                    return self.neighbors[i][j]
+                else:
+                    return 0
+            else: raise
         
     def rand_neighbor(self, node, pi=None):
         """
@@ -74,9 +72,12 @@ class Graph:
             a random neighbor node
         """
         neighbors = list(self[node])
-        pi = np.array(pi) / np.sum(pi)  # normalized array
-        return np.random.choice(neighbors, p=pi)
-    
+        if pi:
+            pi = np.array(pi) / np.sum(pi)  # normalized array
+            return np.random.choice(neighbors, p=pi)
+        else:
+            return np.random.choice(neighbors)
+
     def second_order_bias(self, e, p, q):
         """
         The 2nd order search bias used in node2vec.
@@ -107,7 +108,7 @@ def read_graph(filename, **graph_type):
                  for line in f.readlines())
     graph = Graph(edges, **graph_type)
     t1 = time()
-    graph_logger.debug('Successfully read graph from "%s" (time: %.2fms).'
+    logger.debug('Successfully read graph from "%s" (time: %dms).'
                        % (filename, (t1 - t0) * 1000))
     return graph
 
@@ -172,4 +173,4 @@ if __name__ == "__main__":
     print(g.neighbors)
     print(g.to_array())
 
-    G = read_graph('../sample_data.txt')
+    G = read_graph('small.txt')
