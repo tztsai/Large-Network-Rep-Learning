@@ -87,7 +87,7 @@ class DeepWalk:
             if p < 0: break
             s = 1 - self.T.code[n] * 2
             x = torch.dot(self.Z1[v], self.Z2[p-self.N])
-            lp += torch.sigmoid(s * x).log()
+            lp += torch.sigmoid(s*x).log()
             n = p
         return lp
 
@@ -121,6 +121,16 @@ class DeepWalk:
     def anneal(self):
         """Learning rate simulated annealing."""
         self.lr *= self.tau
+        
+    def save_model(self, filename):
+        pars = {'Z1': self.Z1, 'Z2': self.Z2}
+        with open(filename, 'wb') as f:
+            torch.save(pars, f)
+            
+    def load_model(self, filename):
+        pars = torch.load(filename)
+        self.Z1 = pars['Z1']
+        self.Z2 = pars['Z2']
 
     def similarity(self, u, v):
         with torch.no_grad():
@@ -133,6 +143,7 @@ if __name__ == "__main__":
     g = read_graph('datasets/sample_data.txt')
     dw = DeepWalk(g)
     dw.train(epochs=10)
+    dw.save_model('models/sample_data_deepwalk.pt')
 
     # print('Similarities:')
     # for i in random.sample(g.nodes, 5):
