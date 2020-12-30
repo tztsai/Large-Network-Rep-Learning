@@ -107,7 +107,7 @@ def read_graph(filename, **graph_type):
                  for line in f.readlines())
     graph = Graph(edges, **graph_type)
     t1 = time()
-    logger.debug('Successfully read graph from "%s" (time: %.2fms).'
+    logger.debug('Successfully read graph from "%s" (time: %dms).'
                        % (filename, (t1 - t0) * 1000))
     return graph
 

@@ -12,9 +12,10 @@ logger = logging.getLogger('DeepWalk')
 
 
 class DeepWalk:
-    wl = 10     # walk length
-    ws = 2      # window size
-    alpha = config.ALPHA
+    wl = 6                  # walk length
+    ws = 2                  # window size
+    bs = 64                 # batch size
+    lr = config.ALPHA       # learning rate
 
     def __init__(self, graph: Graph):
         self.G = graph
@@ -65,14 +66,12 @@ class DeepWalk:
 
             walks = self.sample_walks()
             context = self.context_graph(walks)
-            loss = self.loss(context)
+            
+            self.backprop_loss(context)
 
-            logger.info('Loss = %.3e' % loss.item())
-
-            loss.backward()
-            with torch.no_grad():
-                self.Z1 -= self.Z1.grad * self.alpha
-                self.Z2 -= self.Z2.grad * self.alpha
+            with torch.no_grad():  # SGD
+                self.Z1 -= self.Z1.grad * self.lr
+                self.Z2 -= self.Z2.grad * self.lr
                 self.Z1.grad.zero_()
                 self.Z2.grad.zero_()
 
@@ -89,9 +88,22 @@ class DeepWalk:
             n = p
         return lp
 
-    def loss(self, ctx):
-        logger.info('Computing loss...')
-        return -sum(self.log_softmax(v, u) for u, v in pbar(ctx))
+    def backprop_loss(self, context):
+        logger.info('Computing and back propagating loss...')
+        
+        total_loss = 0
+        batch_loss = torch.tensor(0.)
+        
+        for i, (u, v) in enumerate(pbar(context)):
+            loss = -self.log_softmax(v, u)
+            batch_loss += loss
+            total_loss += loss.item()
+            
+            if i % self.bs == 0:
+                batch_loss.backward()
+                batch_loss.zero_()
+            
+        logger.info('Loss = %.3e' % total_loss)
 
     def similarity(self, u, v):
         with torch.no_grad():
@@ -103,7 +115,7 @@ class DeepWalk:
 if __name__ == "__main__":
     g = read_graph('datasets/sample_data.txt')
     dw = DeepWalk(g)
-    dw.train()
+    dw.train(epochs=10)
 
     # print('Similarities:')
     # for i in random.sample(g.nodes, 5):
