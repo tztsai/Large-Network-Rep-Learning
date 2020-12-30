@@ -5,6 +5,7 @@ import torch
 
 from utils.graph import Graph, read_graph
 from utils.huffman import HuffmanTree
+from utils.funcs import pbar
 import config
 
 logger = logging.getLogger('DeepWalk')
@@ -43,8 +44,10 @@ class DeepWalk:
 
     def context_graph(self, walks):
         """Generate a context graph from sampled walks."""
+        logger.info('Sampling context edges from the graph...')
+        
         edges = []
-        for w in walks:
+        for w in pbar(walks, total=self.G.num_nodes):
             for i in range(len(w)):
                 j1 = max(0, i - self.ws)
                 j2 = min(len(w), i + self.ws + 1)
@@ -52,6 +55,8 @@ class DeepWalk:
                     # i: center node, j: context node
                     if i == j: continue
                     edges.append([w[i], w[j]])
+                    
+        logger.info('Sampled %d context edges.' % len(edges))
         return edges
 
     def train(self, epochs=100):
@@ -62,7 +67,7 @@ class DeepWalk:
             context = self.context_graph(walks)
             loss = self.loss(context)
 
-            logger.info('\tLoss: %.3e' % loss.item())
+            logger.info('Loss = %.3e' % loss.item())
 
             loss.backward()
             with torch.no_grad():
@@ -85,7 +90,8 @@ class DeepWalk:
         return lp
 
     def loss(self, ctx):
-        return -sum(self.log_softmax(v, u) for u, v in ctx)
+        logger.info('Computing loss...')
+        return -sum(self.log_softmax(v, u) for u, v in pbar(ctx))
 
     def similarity(self, u, v):
         with torch.no_grad():

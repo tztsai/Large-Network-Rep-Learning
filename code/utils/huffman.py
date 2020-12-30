@@ -2,7 +2,6 @@ from queue import PriorityQueue
 import logging
 
 logger = logging.getLogger('HuffmanTree')
-logger.setLevel(logging.DEBUG)
 
 
 class HuffmanTree:

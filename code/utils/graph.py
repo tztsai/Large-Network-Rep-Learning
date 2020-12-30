@@ -5,7 +5,6 @@ import numpy as np
 from time import time
 
 logger = logging.getLogger('Graph')
-logger.setLevel(logging.DEBUG)
 
 
 class Graph:
@@ -45,9 +44,8 @@ class Graph:
 
         self.decode = {i: v for v, i in encode.items()}
 
-        logger.debug('Constructed a%s graph (V=%d, E=%d).'
-                           % (' directed' if directed else 'n undirected',
-                              self.num_nodes, self.num_edges))
+        logger.debug(f"Constructed a{' directed' if directed else 'n undirected'}"
+                     f" graph (V={self.num_nodes}, E={self.num_edges}).")
 
     def __getitem__(self, idx):
         try:
