@@ -1,4 +1,8 @@
 from queue import PriorityQueue
+import logging
+
+logger = logging.getLogger('HuffmanTree')
+logger.setLevel(logging.DEBUG)
 
 
 class HuffmanTree:
@@ -32,6 +36,8 @@ class HuffmanTree:
                 self.code[i2] = 1
                 pq.put((w, p))
                 p += 1
+                
+        logger.debug('Constructed a binary Huffman tree with %d leaves.' % n)
 
     def encode(self, n):
         code = ''

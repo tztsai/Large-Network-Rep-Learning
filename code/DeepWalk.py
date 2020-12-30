@@ -1,16 +1,18 @@
 import random
+import logging
 import numpy as np
 import torch
 
 from utils.graph import Graph, read_graph
 from utils.huffman import HuffmanTree
-from utils.funcs import sigmoid
 import config
+
+logger = logging.getLogger('DeepWalk')
 
 
 class DeepWalk:
-    wl = 5  # walk length
-    ws = 3  # window size
+    wl = 10     # walk length
+    ws = 2      # window size
     alpha = config.ALPHA
 
     def __init__(self, graph: Graph):
@@ -24,11 +26,11 @@ class DeepWalk:
         self.T = HuffmanTree(node_weights)
 
         # latent representation of nodes
-        self.Z1 = torch.empty((self.N, self.D), requires_grad=True)
+        self.Z1 = torch.rand(self.N, self.D, requires_grad=True)
         # latent representation of inner nodes of the tree
-        self.Z2 = torch.empty((self.N-1, self.D), requires_grad=True)
+        self.Z2 = torch.rand(self.N-1, self.D, requires_grad=True)
 
-    def sample_walk(self):
+    def sample_walks(self):
         """Generate a sample of random walks for each node."""
         def walk(v):
             seq = [v]
@@ -52,11 +54,15 @@ class DeepWalk:
                     edges.append([w[i], w[j]])
         return edges
 
-    def train(self, epochs=10):
+    def train(self, epochs=100):
         for epoch in range(epochs):
-            walks = self.sample_walk()
-            ctx = self.context_graph(walks)
-            loss = self.loss(ctx)
+            logger.info('Epoch: %d' % epoch)
+
+            walks = self.sample_walks()
+            context = self.context_graph(walks)
+            loss = self.loss(context)
+
+            logger.info('\tLoss: %.3e' % loss.item())
 
             loss.backward()
             with torch.no_grad():
@@ -67,30 +73,33 @@ class DeepWalk:
 
     def log_softmax(self, u, v):
         """log p(u|v) where p is the hierarchical softmax function"""
-        lp = 0  # log probability
+        lp = torch.tensor(0.)  # log probability
         n = u
         while True:
             p = self.T.parent[n]
             if p < 0: break
             s = 1 - self.T.code[n] * 2
             x = torch.dot(self.Z1[v], self.Z2[p-self.N])
-            lp += np.log(sigmoid(s * x))
+            lp += torch.sigmoid(s * x).log()
+            n = p
         return lp
 
     def loss(self, ctx):
-        ls = torch.tensor([self.log_softmax(v, u) for u, v in ctx])
-        return -torch.sum(ls)
+        return -sum(self.log_softmax(v, u) for u, v in ctx)
 
     def similarity(self, u, v):
         with torch.no_grad():
             Zu = self.Z1[u]
             Zv = self.Z1[v]
-            Zu /= np.linalg.norm(Zu)
-            Zv /= np.linalg.norm(Zv)
-            return Zu @ Zv
+            return (Zu@Zv) / np.sqrt((Zu@Zu) * (Zv@Zv))
 
 
 if __name__ == "__main__":
-    g = read_graph('utils/small.txt')
+    g = read_graph('datasets/sample_data.txt')
     dw = DeepWalk(g)
     dw.train()
+
+    # print('Similarities:')
+    # for i in random.sample(g.nodes, 5):
+    #     for j in random.sample(g.nodes, 5):
+    #         print('%d -- %d: %.3f' % (i, j, dw.similarity(i, j)))

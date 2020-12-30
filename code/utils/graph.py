@@ -4,8 +4,8 @@ import logging
 import numpy as np
 from time import time
 
-graph_logger = logging.getLogger('Graph')
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('Graph')
+logger.setLevel(logging.DEBUG)
 
 
 class Graph:
@@ -45,7 +45,7 @@ class Graph:
 
         self.decode = {i: v for v, i in encode.items()}
 
-        graph_logger.debug('Constructed a%s graph (V=%d, E=%d).'
+        logger.debug('Constructed a%s graph (V=%d, E=%d).'
                            % (' directed' if directed else 'n undirected',
                               self.num_nodes, self.num_edges))
 
@@ -109,7 +109,7 @@ def read_graph(filename, **graph_type):
                  for line in f.readlines())
     graph = Graph(edges, **graph_type)
     t1 = time()
-    graph_logger.debug('Successfully read graph from "%s" (time: %.2fms).'
+    logger.debug('Successfully read graph from "%s" (time: %.2fms).'
                        % (filename, (t1 - t0) * 1000))
     return graph
 
