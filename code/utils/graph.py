@@ -77,24 +77,6 @@ class Graph:
             return np.random.choice(neighbors, p=pi)
         else:
             return np.random.choice(neighbors)
-
-    def second_order_bias(self, e, p, q):
-        """
-        The 2nd order search bias used in node2vec.
-
-        Args:
-            e (2-tuple): the previous traversed edge
-            p: "walk back" parameter
-            q: "walk away" parameter
-        """
-        u, v = e
-        for x in self[v]:
-            if x == u:  # walk back
-                return 1/p
-            elif v in self[u]:
-                return 1
-            else:
-                return 1/q
         
     def to_array(self):
         return np.array([[self[i, j] for j in range(self.num_nodes)]
