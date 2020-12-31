@@ -9,21 +9,19 @@ from config import WINDOW_SIZE, D
 # Parameters
 PARAMETER_w = 1 # window size
 
-NUM_WALKS = 2
-WALK_LENGTH = 10
+NUM_WALKS = 10
+WALK_LENGTH = 80
 P = 1
 Q = 1
-WEIGHTED=True
 
 
 class Node2vec():
-    def __init__(self, G:Graph, p, q, weighted=False):
+    def __init__(self, G:Graph, p, q):
         self.G = G
         self.p = p # return parameter
         self.q = q # in-out parameter
         self.num_nodes = G.num_nodes
         self.num_edges = G.num_edges
-        self.weighted = weighted
 
 
     def compute_transfer_prob(self):
@@ -31,38 +29,36 @@ class Node2vec():
         self.transfer_prob_nodes = [] # transfer probability given a previous node
         for node in self.G.neighbors.keys():
             m = [ ]
-            if self.weighted:
-                for neighbor in self.G[node].keys():
-                    k = [ ]
+            for neighbor in self.G[node].keys():
+                k = [ ]
+                for next_neighbor, weight in self.G[neighbor].items():
+                    # compute probability for each edge 
+                    if next_neighbor == node:
+                        k.append(weight * (1/self.p))
+                    elif next_neighbor in self.G[node].keys():
+                        k.append(weight * 1)
+                    else:
+                        k.append(weight * (1/self.q)) # transfer prob for 2 hop nodes
+            
+                k = [i/sum(k) for i in k] # normalize  distrition k given node v(neighbor) and previous node(t)
+                m.append(alias_setup(k))
 
-                    for next_neighbor, weight in self.G[neighbor].items():
-                        # compute probability for each edge 
-                        if next_neighbor == node:
-                            k.append(weight * (1/self.p))
-                        elif next_neighbor in self.G[node].keys():
-                            k.append(weight * 1)
-                        else:
-                            k.append(weight * (1/self.q)) # transfer prob for 2 hop nodes
-                
-                    k = [i/sum(k) for i in k] # normalize  distrition k given node v(neighbor) and previous node(t)
-                    m.append(alias_setup(k))
-                self.transfer_prob_nodes.append(m)
+            self.transfer_prob_nodes.append(m)
 
-            else:
-                pass
 
-    def learn_features(self, num_walks, walk_length, save_path):
+
+    def learn_features(self, d, ws, num_walks, walk_length, save_path):
         walks = []
         nodes = list(self.G.neighbors.keys())
         for iter in range(num_walks):
             print('iteration ', iter+1, '/', num_walks, '...')
-            # random.shuffle(nodes)
+            random.shuffle(nodes)
             for node in nodes:
                 walk = self.node2vec_walk(node, walk_length)
                 walks.append(walk)
 
         walks = [[str(node) for node in walk] for walk in walks]
-        model = Word2Vec(walks, size=D, window=WINDOW_SIZE, min_count=0)
+        model = Word2Vec(walks, size=d, window=ws, min_count=0)
         model.save_word2vec_format(save_path)
 
 
@@ -144,13 +140,12 @@ def alias_draw(J, q):
 # random walk return a list whose length is (num of nodes x num of walks)
 # each element in the list is a list whose length is (walk length)
 # i.e. for every node we walk num of walk times with a walk length 
-
+# node classification ---> Micro-F1 and Macro-F1.
 
 if __name__ == "__main__":
 
-    graph = read_graph('datasets/lesmis/lesmis.mtx', directed=False)
-    print(graph[1])
-    n2v = Node2vec(graph, P, Q, WEIGHTED)
+    graph = read_graph('datasets/karate.edgelist', directed=False)
+    n2v = Node2vec(graph, P, Q)
     n2v.compute_transfer_prob()
 
-    n2v.learn_features(NUM_WALKS, WALK_LENGTH, 'embed/node2vec_lesmix.embed')
+    n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, 'models/node2vec_karate.embed')
