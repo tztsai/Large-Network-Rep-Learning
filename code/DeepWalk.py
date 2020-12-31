@@ -2,24 +2,36 @@ import random
 import logging
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
 from time import time
 
 from utils.graph import Graph, read_graph
 from utils.huffman import HuffmanTree
-from utils.funcs import pbar, pmap
+from utils.funcs import pbar, cos_similarity
 import config
 
 logger = logging.getLogger('DeepWalk')
 
+model_file = 'models/sample_data_deepwalk.pt'
+array_file = 'models/sample_data_deepwalk.txt'
 
-class DeepWalk:
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+logger.info('Using device: %s' % device)
+
+
+class DeepWalk(nn.Module):
     wl = 6                  # walk length
     ws = 2                  # window size
+    
     bs = 128                # batch size
     lr = config.ALPHA       # learning rate
-    tau = 0.95              # exponential annealing rate
-
+    tau = 0.99              # exponential annealing rate
+    
     def __init__(self, graph: Graph):
+        super().__init__()
+
         self.G = graph
         self.N = graph.num_nodes
         self.D = config.D
@@ -27,15 +39,20 @@ class DeepWalk:
         # build a Huffman binary tree from graph nodes
         node_weights = [sum(graph.neighbors[n].values())
                         for n in graph.nodes]
-        self.T = HuffmanTree(node_weights)
-
+        self.T = HuffmanTree(node_weights) 
+        
         # latent representation of nodes
-        self.Z1 = torch.rand(self.N, self.D, requires_grad=True)
+        self.Z1 = nn.Parameter(torch.rand(self.N, self.D))
         # latent representation of inner nodes of the tree
-        self.Z2 = torch.rand(self.N-1, self.D, requires_grad=True)
-
-    def sample_walks(self):
-        """Generate a sample of random walks for each node."""
+        self.Z2 = nn.Parameter(torch.rand(self.N-1, self.D))
+        
+        self.to(device)
+        
+        # stochastic gradient descent optimizer
+        self.opt = optim.SGD(self.parameters(), lr=self.lr)
+        
+    def walk(self):
+        """Generate a random walk for each node."""
         def walk(v):
             seq = [v]
             for _ in range(self.wl):
@@ -44,12 +61,13 @@ class DeepWalk:
             return seq
 
         return map(walk, self.G.nodes)
-
-    def context_graph(self, walks):
-        """Generate a context graph from sampled walks."""
+    
+    def sample(self):
+        """Sample context edges."""
         logger.info('Sampling context edges from the graph...')
-        
+
         edges = []
+        walks = self.walk()
         for w in pbar(walks, total=self.G.num_nodes):
             for i in range(len(w)):
                 j1 = max(0, i - self.ws)
@@ -58,26 +76,10 @@ class DeepWalk:
                     # i: center node, j: context node
                     if i == j: continue
                     edges.append([w[i], w[j]])
-                    
+
         logger.info('Sampled %d context edges.' % len(edges))
-        return np.array(edges)
-
-    def train(self, epochs=100):
-        for epoch in range(epochs):
-            logger.info('Epoch: %d' % epoch)
-            logger.info('Learning rate = %.2e' % self.lr)
-            
-            start_time = time()
-
-            walks = self.sample_walks()
-            context = self.context_graph(walks)
-            
-            self.backprop_loss(context)
-            self.anneal()
-            
-            end_time = time()
-            logger.info('Epoch time cost: %d' % (1000 * (end_time - start_time)))
-            
+        return torch.tensor(edges, device=device)
+    
     def log_softmax(self, u, v):
         """log p(u|v) where p is the hierarchical softmax function"""
         lp = torch.tensor(0.)  # log probability
@@ -90,62 +92,65 @@ class DeepWalk:
             lp += torch.sigmoid(s*x).log()
             n = p
         return lp
-
-    def backprop_loss(self, context):
-        logger.info('Computing and back propagating loss...')
-        
+    
+    def loss(self, sample):
+        return -sum(self.log_softmax(v, u) for u, v in sample)
+    
+    def step(self):
         total_loss = 0
-        num_batches = len(context) // self.bs
         
-        for i in pbar(range(num_batches)):
-            batch_loss = 0
-            
-            for u, v in context[i*self.bs : (i+1)*self.bs]:
-                loss = -self.log_softmax(v, u)
-                batch_loss += loss
-                total_loss += loss
-                
-            batch_loss.backward()
-            self.sgd()
-            
+        sample = self.sample()
+        batches = DataLoader(sample, batch_size=self.bs)
+        
+        for batch in pbar(batches):
+            loss = self.loss(batch)
+            total_loss += loss
+
+            loss.backward()
+            self.opt.step()
+            self.opt.zero_grad()
+
+        self.anneal()
         logger.info('Loss = %.3e' % total_loss)
         
-    def sgd(self):
-        """Stochastic gradient descent."""
-        with torch.no_grad():
-            self.Z1 -= self.Z1.grad * self.lr
-            self.Z2 -= self.Z2.grad * self.lr
-            self.Z1.grad.zero_()
-            self.Z2.grad.zero_()
-            
     def anneal(self):
         """Learning rate simulated annealing."""
         self.lr *= self.tau
         
-    def save_model(self, filename):
-        pars = {'Z1': self.Z1, 'Z2': self.Z2}
-        with open(filename, 'wb') as f:
-            torch.save(pars, f)
+    def save(self, path):
+        torch.save(self.state_dict(), path)
             
-    def load_model(self, filename):
-        pars = torch.load(filename)
-        self.Z1 = pars['Z1']
-        self.Z2 = pars['Z2']
+    def load(self, path):
+        state = torch.load(path)
+        self.load_state_dict(state)
+        
+    def embedding(self):
+        return self.Z1.data.cpu().numpy()
 
+    def save_embedding(self, path):
+        Z = self.embedding()
+        np.savetxt(path, Z, header=str(Z.shape))
+        
     def similarity(self, u, v):
-        with torch.no_grad():
-            Zu = self.Z1[u]
-            Zv = self.Z1[v]
-            return (Zu@Zv) / np.sqrt((Zu@Zu) * (Zv@Zv))
-
+        Z = self.embedding()
+        return cos_similarity(Z[u], Z[v])
+     
+        
+def train(model: DeepWalk, epochs=100):
+    for epoch in range(epochs):
+        logger.info('Epoch: %d' % epoch)
+        logger.info('Learning rate = %.2e' % model.lr)
+        
+        start_time = time()
+        model.step()
+        end_time = time()
+        logger.info('Epoch time cost: %dms.\n' %
+                    (1000 * (end_time - start_time)))
+    
 
 if __name__ == "__main__":
-    g = read_graph('datasets/sample_data.txt')
-    dw = DeepWalk(g)
-    dw.train(epochs=10)
-    dw.save_model('models/sample_data_deepwalk.pt')
-
-    # print('Similarities:')
-    # for i in random.sample(g.nodes, 5):
-    #     for j in random.sample(g.nodes, 5):
-    #         print('%d -- %d: %.3f' % (i, j, dw.similarity(i, j)))
+    graph = read_graph('datasets/sample_data.txt')
+    model = DeepWalk(graph)
+    train(model, epochs=250)
+    model.save(model_file)
+    model.save_embedding(array_file)
