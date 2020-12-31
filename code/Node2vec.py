@@ -3,7 +3,8 @@ import random
 import math
 from utils.graph import Graph, read_graph, alias_setup, alias_draw
 import numpy.random as npr
-
+from gensim.models import Word2Vec
+from config import WINDOW_SIZE, D
 
 # Parameters
 PARAMETER_w = 1 # window size
@@ -50,7 +51,7 @@ class Node2vec():
             else:
                 pass
 
-    def learn_features(self, num_walks, walk_length):
+    def learn_features(self, num_walks, walk_length, save_path):
         walks = []
         nodes = list(self.G.neighbors.keys())
         for iter in range(num_walks):
@@ -59,7 +60,11 @@ class Node2vec():
             for node in nodes:
                 walk = self.node2vec_walk(node, walk_length)
                 walks.append(walk)
-        return walks
+
+        walks = [[str(node) for node in walk] for walk in walks]
+        model = Word2Vec(walks, size=D, window=WINDOW_SIZE, min_count=0)
+        model.save_word2vec_format(save_path)
+
 
 
     def node2vec_walk(self, start_node, walk_length):
@@ -71,14 +76,17 @@ class Node2vec():
                 next_node_index = random.randrange(0, len(self.G[start_node]))
             else:
                 prev_node = walk[-2]
-                print('pre, cur : ', prev_node, current_node)
-                next_node_index = alias_draw(*self.transfer_prob_nodes[prev_node][current_node])
+                # print('pre, cur : ', prev_node, current_node)
+                current_nodex_index = list(self.G[prev_node].keys()).index(current_node)
+                next_node_index = alias_draw(*self.transfer_prob_nodes[prev_node][current_nodex_index])
             
-            next_node = list(self.G[start_node].keys())[next_node_index]
+            next_node = list(self.G[current_node].keys())[next_node_index]
             walk.append(next_node)
         
        
         return walk
+
+
 
 
 # random walk return a list whose length is (num of nodes x num of walks)
@@ -92,7 +100,5 @@ if __name__ == "__main__":
     print(graph[1])
     n2v = Node2vec(graph, P, Q, WEIGHTED)
     n2v.compute_transfer_prob()
-    # print(len(n2v.transfer_prob_nodes))
-    print(len(n2v.transfer_prob_nodes[1]))
-    # walks = n2v.learn_features(NUM_WALKS, WALK_LENGTH)
-    # print(walks)
+
+    n2v.learn_features(NUM_WALKS, WALK_LENGTH, 'embed/node2vec_lesmix.embed')
