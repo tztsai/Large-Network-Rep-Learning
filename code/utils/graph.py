@@ -95,8 +95,6 @@ def read_graph(filename, **graph_type):
     return graph
 
 
-
-
 if __name__ == "__main__":
     edges = [(1, 2), (2, 3), (3, 1), (2, 4), (2, 1), (3, 4)]
     g = Graph(edges, directed=True)
