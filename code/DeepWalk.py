@@ -1,6 +1,7 @@
 import random
 import logging
-import sys, os
+import sys
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -14,55 +15,16 @@ import config
 
 logger = logging.getLogger('DeepWalk')
 
-try:
-    data_path = sys.argv[1]
-except:
-    data_path = 'datasets/sample_data.txt'
-    
-dataset = os.path.basename(data_path).split('.')[0]
-print('Dataset:', dataset, end='\n\n')
 
-model_file = f'models/{dataset}_deepwalk.pt'
-array_file = f'models/{dataset}_deepwalk.txt'
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-logger.info('Using device: %s' % device)
-
-
-class DeepWalk(nn.Module):
+class RandomWalk:
+    """Randomly walk in the graph to draw samples."""
     wl = 6                  # walk length
     ws = 2                  # window size
     
-    bs = 128                # batch size
-    lr = config.ALPHA       # learning rate
-    tau = 0.99              # exponential annealing rate
-    
-    def __init__(self, graph: Graph, load_model=True):
-        super().__init__()
-
+    def __init__(self, graph):
         self.G = graph
         self.N = graph.num_nodes
-        self.D = config.D
 
-        # build a Huffman binary tree from graph nodes
-        node_weights = [sum(graph.neighbors[n].values())
-                        for n in graph.nodes]
-        self.T = HuffmanTree(node_weights) 
-        
-        # latent representation of nodes
-        self.Z1 = nn.Parameter(torch.rand(self.N, self.D))
-        # latent representation of inner nodes of the tree
-        self.Z2 = nn.Parameter(torch.rand(self.N-1, self.D))
-        
-        self.to(device)  # use CPU or GPU device
-        
-        # stochastic gradient descent optimizer
-        self.opt = optim.SGD(self.parameters(), lr=self.lr)
-        
-        if load_model:
-            try: self.load(model_file)
-            except FileNotFoundError: pass
-        
     def walk(self):
         """Generate a random walk for each node."""
         def walk(v):
@@ -92,7 +54,19 @@ class DeepWalk(nn.Module):
         logger.info('Sampled %d context edges.' % len(edges))
         return torch.tensor(edges, device=device)
     
-    def log_softmax(self, u, v):
+    
+class HLogSoftMax:
+    """Hierarchical log softmax loss of the graph embedding."""
+    
+    def __init__(self, graph):
+        self.N = graph.num_nodes
+
+        # build a Huffman binary tree from graph nodes
+        node_weights = [sum(graph.neighbors[n].values())
+                        for n in graph.nodes]
+        self.T = HuffmanTree(node_weights)
+        
+    def log_softmax(self, u, v, Z):
         """log p(u|v) where p is the hierarchical softmax function"""
         lp = torch.tensor(0.)  # log probability
         n = u
@@ -100,34 +74,70 @@ class DeepWalk(nn.Module):
             p = self.T.parent[n]
             if p < 0: break
             s = 1 - self.T.code[n] * 2
-            x = torch.dot(self.Z1[v], self.Z2[p-self.N])
+            x = torch.dot(Z[v], Z[p])
             lp += torch.sigmoid(s*x).log()
             n = p
         return lp
     
-    def loss(self, sample):
-        return -sum(self.log_softmax(v, u) for u, v in sample)
+    def __call__(self, sample, embedding):
+        return -sum(self.log_softmax(v, u, embedding)
+                    for u, v in sample)
     
-    def step(self):
-        total_loss = 0
-        
-        sample = self.sample()
-        batches = DataLoader(sample, batch_size=self.bs)
-        
-        for batch in pbar(batches):
-            loss = self.loss(batch)
-            total_loss += loss
 
-            loss.backward()
-            self.opt.step()
-            self.opt.zero_grad()
-
-        self.anneal()
-        logger.info('Loss = %.3e' % total_loss)
+class DeepWalk(nn.Module):
+    bs = 128                # batch size
+    lr = config.ALPHA       # learning rate
+    tau = 0.99              # exponential annealing rate
+    
+    def __init__(self, *shape, load_model=True):
+        super().__init__()
+        
+        self.N, self.D = shape
+        self.Z = nn.Parameter(torch.rand(2*self.N-1, self.D))
+        # 2*N-1 nodes in the binary tree, the first N are graph nodes
+        self.to(device)  # use CPU or GPU device
+        
+        # stochastic gradient descent optimizer
+        self.opt = optim.SGD(self.parameters(), lr=self.lr)
+        
+        if load_model:
+            try: self.load(model_file)
+            except FileNotFoundError: pass
         
     def anneal(self):
         """Learning rate simulated annealing."""
         self.lr *= self.tau
+        
+    def fit(self, graph, epochs=10, epoch_iters=10):
+        sampler = RandomWalk(graph)
+        loss_func = HLogSoftMax(graph)
+
+        for epoch in range(epochs):
+            print()
+            logger.info('Epoch: %d' % epoch)
+            start_time = time()
+
+            sample = sampler.sample()
+            batches = DataLoader(sample, batch_size=self.bs)
+
+            for i in range(epoch_iters):
+                print()
+                logger.info(f'\tIteration: {i}')
+                total_loss = 0
+
+                for batch in pbar(batches):
+                    loss = loss_func(batch, self.Z)
+                    total_loss += loss
+                    loss.backward()
+                    self.opt.step()
+                    self.opt.zero_grad()
+
+                # self.anneal()
+                logger.info('\tLoss = %.3e' % total_loss)
+
+            end_time = time()
+            logger.info('Epoch time cost: %dms.' %
+                        (1000 * (end_time - start_time)))
         
     def save(self, path):
         logger.info(f'Saving model to {path}')
@@ -139,7 +149,8 @@ class DeepWalk(nn.Module):
         self.load_state_dict(state)
         
     def embedding(self):
-        return self.Z1.data.cpu().numpy()
+        """The graph embedding matrix."""
+        return self.Z.data.cpu().numpy()[:self.N]
 
     def save_embedding(self, path):
         logger.info(f'Saving embedding array to {path}')
@@ -149,25 +160,28 @@ class DeepWalk(nn.Module):
     def similarity(self, u, v):
         Z = self.embedding()
         return cos_similarity(Z[u], Z[v])
-     
-        
-def train(model: DeepWalk, epochs=100):
-    for epoch in range(epochs):
-        logger.info('\nEpoch: %d' % epoch)
-        logger.info('Learning rate = %.2e' % model.lr)
-        
-        start_time = time()
-        model.step()
-        end_time = time()
-        logger.info('Epoch time cost: %dms.' %
-                    (1000 * (end_time - start_time)))
     
-
+        
 if __name__ == "__main__":
-    graph = read_graph(data_path)
-    model = DeepWalk(graph)
     try:
-        train(model, epochs=200)
+        data_path = sys.argv[1]
+    except:
+        data_path = 'datasets/small.txt'
+
+    dataset = os.path.basename(data_path).split('.')[0]
+    print('Dataset:', dataset, end='\n\n')
+    
+    model_file = f'models/{dataset}_deepwalk.pt'
+    array_file = f'models/{dataset}_deepwalk.txt'
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    logger.info('Using device: %s' % device)
+
+    graph = read_graph(data_path)
+    model = DeepWalk(graph.num_nodes, config.D, load_model=False)
+    
+    try:
+        model.fit(graph)
     except KeyboardInterrupt:
         print('Training stopped.')
     finally:
