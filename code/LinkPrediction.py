@@ -1,5 +1,7 @@
 import numpy as np
+import networkx as nx
 from NetMF import NetMF
+from sklearn.metrics import roc_auc_score
 
 # Global                                                                          
 PATH = "./results/embeddings/"
@@ -18,10 +20,25 @@ class LinkPrediction():
                 self.embedding.append(values)
             self.embedding = np.array(self.embedding)
     
-    def main(self):
+    def preprocess_graph(self):
         pass
+
+    def get_ROC_AUC_score(self, y_true, y_score):
+        return roc_auc_score(y_true, y_score)
+
+    def common_neighbors(self):
+        pass
+
+    def jaccards_coefficient(self):
+        pass
+
+    def adamic_adar_score(self):
+        pass
+
+    def preferential_attachment(self):
+        pass
+
 
 if __name__ == "__main__":
     lp = LinkPrediction()
     lp.read_file(PATH+FILE_NAME)
-    lp.main()

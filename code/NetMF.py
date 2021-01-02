@@ -1,4 +1,4 @@
-from scipy import linalg
+from scipy import linalg, sparse
 import numpy as np
 from utils.graph import Graph, read_graph
 
