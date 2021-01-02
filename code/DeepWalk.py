@@ -30,7 +30,7 @@ class RandomWalk:
         def walk(v):
             seq = [v]
             for _ in range(self.wl):
-                v = self.G.rand_neighbor(v)
+                v = self.G.sample_neighbors(v)
                 seq.append(v)
             return seq
 
@@ -62,8 +62,7 @@ class HLogSoftMax:
         self.N = graph.num_nodes
 
         # build a Huffman binary tree from graph nodes
-        node_weights = [sum(graph.neighbors[n].values())
-                        for n in graph.nodes]
+        node_weights = [graph.weight(n) for n in graph.nodes]
         self.T = HuffmanTree(node_weights)
         
     def log_softmax(self, u, v, Z):
@@ -89,20 +88,21 @@ class DeepWalk(nn.Module):
     lr = config.ALPHA       # learning rate
     tau = 0.99              # exponential annealing rate
     
-    def __init__(self, *shape, load_model=True):
+    def __init__(self, N, D=config.D, model_file=None):
         super().__init__()
+        self.N, self.D = N, D
         
-        self.N, self.D = shape
-        self.Z = nn.Parameter(torch.rand(2*self.N-1, self.D))
+        # embedding tensor
+        self.Z = nn.Parameter(torch.rand(2*N-1, D) / np.sqrt(2*N-1))
         # 2*N-1 nodes in the binary tree, the first N are graph nodes
         self.to(device)  # use CPU or GPU device
+
+        self.opt = optim.Adam(self.parameters(), lr=self.lr)
         
-        # stochastic gradient descent optimizer
-        self.opt = optim.SGD(self.parameters(), lr=self.lr)
-        
-        if load_model:
+        if model_file:
             try: self.load(model_file)
-            except FileNotFoundError: pass
+            except FileNotFoundError:
+                logger.warning('Model file "%s" not found. A new model is initialized.')
         
     def anneal(self):
         """Learning rate simulated annealing."""
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     logger.info('Using device: %s' % device)
 
     graph = read_graph(data_path)
-    model = DeepWalk(graph.num_nodes, config.D, load_model=False)
+    model = DeepWalk(graph.num_nodes, load_model=False)
     
     try:
         model.fit(graph)

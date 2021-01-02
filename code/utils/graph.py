@@ -59,24 +59,28 @@ class Graph:
                 else:
                     return 0
             else: raise
+
+    def weight(self, u, v=None):
+        """The weight of a node or an edge, depending on the number of arguments."""
+        if v is None:
+            return sum(self[u].values())
+        else:
+            return self[u, v]
         
-    def rand_neighbor(self, node, pi=None):
+    def sample_neighbors(self, node, k=1):
         """
-        Sample a random neighbor of the node.
+        Generate a sample of neighbors of the node.
 
         Args:
-            node: the starting node
-            pi (list): the sampling probability distribution
+            node: the node from whose neighborhood the sample is drawn
+            k (default 1): the sample size
 
         Returns:
-            a random neighbor node
+            a random neighbor if k = 1; otherwise a list of sampled neighbors
         """
         neighbors = list(self[node])
-        if pi:
-            pi = np.array(pi) / np.sum(pi)  # normalized array
-            return np.random.choice(neighbors, p=pi)
-        else:
-            return np.random.choice(neighbors)
+        sample = random.sample(neighbors, k)
+        return sample[0] if k == 1 else sample
         
     def to_array(self):
         return np.array([[self[i, j] for j in range(self.num_nodes)]

@@ -22,5 +22,9 @@ def split_array(a: np.ndarray, m):
     return [a[i*l : (i+1)*l] for i in range(m)]
 
 
+def norm(x):
+    return np.linalg.norm(x)
+
+
 def cos_similarity(x, y):
     return (x@y) / np.sqrt((x@x) * (y@y))
