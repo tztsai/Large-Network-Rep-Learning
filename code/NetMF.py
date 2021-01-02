@@ -4,6 +4,7 @@ from utils.graph import Graph, read_graph
 
 # Global
 PRINT_RESULT = True
+SAVE_PATH = "./results/embeddings/NetMF.txt"
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
@@ -110,6 +111,9 @@ class NetMF():
         # step 5
         return np.dot(U_d, np.sqrt(Sigma_d)).astype(np.float64)
 
+    def save_embedding(self, embedding, path):
+        np.savetxt(path, embedding)
+
 
 if __name__ == "__main__":
     #g = read_graph('./datasets/small.txt')
@@ -125,3 +129,5 @@ if __name__ == "__main__":
         print(res_small)
         print("")
         print(res_large)
+    # nmf.save_embedding(res_small, SAVE_PATH)
+    nmf.save_embedding(res_large, SAVE_PATH)

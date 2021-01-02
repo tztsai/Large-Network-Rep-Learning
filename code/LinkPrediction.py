@@ -1,20 +1,27 @@
-from DeepWalk import DeepWalk
-from Node2vec import Node2vec
-from Line_1 import Line_1
+import numpy as np
 from NetMF import NetMF
-from GraphSage import GraphSage
 
 # Global                                                                          
-FILE_NAME = "sample_data.txt"
+PATH = "./results/embeddings/"
+FILE_NAME = "NetMF.txt"
 
 class LinkPrediction():
     def __init__(self):
-        pass
+        self.embedding = []
 
+    def read_file(self, file_path):
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for i in range(len(lines)):
+                line = lines[i]
+                values = [float(x.strip()) for x in line.split()]
+                self.embedding.append(values)
+            self.embedding = np.array(self.embedding)
+    
     def main(self):
         pass
 
 if __name__ == "__main__":
     lp = LinkPrediction()
+    lp.read_file(PATH+FILE_NAME)
     lp.main()
-
