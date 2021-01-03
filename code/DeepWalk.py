@@ -86,7 +86,6 @@ class HLogSoftMax:
 class DeepWalk(nn.Module):
     bs = 128                # batch size
     lr = config.ALPHA       # learning rate
-    tau = 0.99              # exponential annealing rate
     
     def __init__(self, N, D=config.D, model_file=None):
         super().__init__()
@@ -103,10 +102,6 @@ class DeepWalk(nn.Module):
             try: self.load(model_file)
             except FileNotFoundError:
                 logger.warning('Model file "%s" not found. A new model is initialized.')
-        
-    def anneal(self):
-        """Learning rate simulated annealing."""
-        self.lr *= self.tau
         
     def fit(self, graph, epochs=10, epoch_iters=10):
         sampler = RandomWalk(graph)
@@ -132,7 +127,6 @@ class DeepWalk(nn.Module):
                     self.opt.step()
                     self.opt.zero_grad()
 
-                # self.anneal()
                 logger.info('\tLoss = %.3e' % total_loss)
 
             end_time = time()
