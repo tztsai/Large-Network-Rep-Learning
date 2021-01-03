@@ -42,3 +42,5 @@ class LinkPrediction():
 if __name__ == "__main__":
     lp = LinkPrediction()
     lp.read_file(PATH+FILE_NAME)
+    lp.preprocess_graph()
+    lp.get_ROC_AUC_score()
