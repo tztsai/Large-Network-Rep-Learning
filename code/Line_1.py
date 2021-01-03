@@ -73,6 +73,7 @@ def test():
     pass
     
 class DataFlowModel:
+    #"persudo code from Network_Embedding_with_TensorFlow.pdf"
     def __init__(self, FOSO, batch_size, K, dim, nodenum):
         self.v_i = tf.placeholder(name="v_i", dtype=tf.int32, shape=[batch_size * (K + 1)])
         self.v_j = tf.placeholder(name="v_j", dtype=tf.int32, shape=[batch_size * (K + 1)])
