@@ -3,7 +3,7 @@ Name   	      dir      label               find    match      comment
 
 BlogCatalog   undir     multilabelled     
 PubMed        dir       labelled            y      y
-Cora          dir       multilabelled
+Cora          dir       multilabelled       y      y
 Reddit        undir     single labelled 
 Flickr        undir     multilabelled
 Youtube       undir     multilabelled
