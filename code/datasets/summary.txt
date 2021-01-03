@@ -1,5 +1,5 @@
 NODE CLASSIFICATION
-Name   	      dir      label               find    match      comment
+Name   	      dir      label               find    match     preprocessed   comment
 
 BlogCatalog   undir     multilabelled       y      y
 PubMed        dir       labelled            y      y
@@ -7,11 +7,11 @@ Cora          dir       multilabelled       y      y
 Reddit        undir     single labelled 
 Flickr        undir     multilabelled
 Youtube       undir     multilabelled
-Cocit         dir       lablled            y        y
+Cocit         dir       lablled            y        y            y
 
 LINK PREDICTION
 BlogCatalog   undir     multiplabelled
-FLickr        undir     multilabelled
+FLickr        undir     multilabelled                            y
 Reddit        undir     single labelled  
 DBLP-Au       undir     unlabelled 
 Youtube       undir     multilabelled              
