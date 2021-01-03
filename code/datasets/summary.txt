@@ -1,18 +1,18 @@
 NODE CLASSIFICATION
 Name   	      dir      label               find    match     preprocessed   comment
 
-BlogCatalog   undir     multilabelled       y      y
+BlogCatalog   undir     multilabelled       y      y			y
 PubMed        dir       labelled            y      y
 Cora          dir       multilabelled       y      y
 <<<<<<< HEAD
 Reddit        undir     single labelled 	y
 Flickr        undir     multilabelled		y		y			y
 Youtube       undir     multilabelled
-Cocit         dir       lablled            y        y            y
+Cocit         dir       lablled             y       y           y
 
 LINK PREDICTION
-BlogCatalog   undir     multiplabelled
-FLickr        undir     multilabelled       y        y           y
+BlogCatalog   undir     multiplabelled		y		y			y
+FLickr        undir     multilabelled       y       y           y
 Reddit        undir     single labelled  	y
 =======
 Reddit        undir     single labelled      
@@ -21,8 +21,8 @@ Youtube       undir     multilabelled      y       y
 Cocit         dir       lablled            y       y            y
 
 LINK PREDICTION
-BlogCatalog   undir     multiplabelled     y       y
-FLickr        undir     multilabelled      y       y             y
+BlogCatalog   undir     multiplabelled     y       y			y
+FLickr        undir     multilabelled      y       y            y
 Reddit        undir     single labelled  
 >>>>>>> 0e0528459240e29bf1b6d159d611398227310e70
 DBLP-Au       undir     unlabelled 
