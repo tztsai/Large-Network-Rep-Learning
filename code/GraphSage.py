@@ -55,14 +55,21 @@ class GraphSage(nn.Module):
             Z = np.ones(self.N, self.D)
 
         for k in range(self.K):
+            # newZ = np.empty(Z.shape)
+            s = self.S[k]
             for v in graph.nodes:
-                s = self.S[k]
                 neighbors = graph.sample_neighbors(v, s)
-                Zn = self.aggregate([Z[u] for u in neighbors])
-                Z[v] = self.sigma(self.W[k](np.concatenate((Z[v], Zn))))
-                Z[v] /= norm(Z[v])
+                zn = self.aggregate([Z[u] for u in neighbors])
+                z = self.sigma(self.W[k](np.concatenate((Z[v], zn))))
+                # newZ[v] = z / norm(z)
+                Z[v] = z / norm(z)
+            # Z = newZ
 
         return Z
+
+    def fit(self, graph, features=None, epochs=100):
+        for epoch in range(epochs):
+            self.forward(graph, features)
 
     def save(self, path):
         logger.info(f'Saving model to {path}')
