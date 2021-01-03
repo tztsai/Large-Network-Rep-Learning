@@ -52,15 +52,28 @@ class Graph:
 
     def __getitem__(self, idx):
         try:
+            idx = int(idx)
             return self.neighbors[idx]
-        except (IndexError, TypeError):
-            if type(idx) is tuple and len(idx) == 2:
+        except:
+            try:
                 i, j = idx
                 if j in self.neighbors[i]:
                     return self.neighbors[i][j]
                 else:
                     return 0
-            else: raise
+            except:
+                raise TypeError('Invalid item type!')
+            
+    def __contains__(self, obj):
+        try:
+            obj = int(obj)
+            return obj in self.nodes
+        except:
+            try:
+                i, j = obj
+                return j in self[i]
+            except:
+                return False
 
     def weight(self, u, v=None):
         """The weight of a node or an edge, depending on the number of arguments."""
