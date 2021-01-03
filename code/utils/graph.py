@@ -52,15 +52,28 @@ class Graph:
 
     def __getitem__(self, idx):
         try:
+            idx = int(idx)
             return self.neighbors[idx]
-        except (IndexError, TypeError):
-            if type(idx) is tuple and len(idx) == 2:
+        except:
+            try:
                 i, j = idx
                 if j in self.neighbors[i]:
                     return self.neighbors[i][j]
                 else:
                     return 0
-            else: raise
+            except:
+                raise TypeError('Invalid item type!')
+            
+    def __contains__(self, obj):
+        try:
+            obj = int(obj)
+            return obj in self.nodes
+        except:
+            try:
+                i, j = obj
+                return j in self[i]
+            except:
+                return False
 
     def weight(self, u, v=None):
         """The weight of a node or an edge, depending on the number of arguments."""
@@ -89,16 +102,27 @@ class Graph:
                          for i in range(self.num_nodes)])
         
 
-def read_graph(graph_file, labels_file=None, **graph_type):
+def read_graph(graph_file, labels_file=None, multi_labels=False, **graph_type):
+
+    def read_edge(line):
+        return list(map(int, line.split()))
+
+    def read_label(line):
+        tokens = list(map(int, line.split()))
+        if multi_labels:
+            node, *label = tokens
+        else:
+            node, label = tokens
+        return node, label
+    
     t0 = time()
     
     with open(graph_file, 'r') as f:
-        edges = ([int(s) for s in line.split()]
-                 for line in f.readlines())
+        edges = map(read_edge, f.readlines())
         
     if labels_file:
         with open(labels_file, 'r') as f:
-            labels = dict(line.split() for line in f.readlines())
+            labels = dict(map(read_label, f.readlines()))
     else:
         labels = None
         
@@ -111,9 +135,5 @@ def read_graph(graph_file, labels_file=None, **graph_type):
 
 
 if __name__ == "__main__":
-    edges = [(1, 2), (2, 3), (3, 1), (2, 4), (2, 1), (3, 4)]
-    g = Graph(edges, directed=True)
-    print(g.neighbors)
-    print(g.to_array())
-
-    G = read_graph('small.txt')
+    G = read_graph('code/datasets/cocit/data_CoCit_CoCit-edgelist-unitweight.txt',
+                   'code/datasets/cocit/data_CoCit_CoCit-labels.txt')

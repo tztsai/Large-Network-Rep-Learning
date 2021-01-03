@@ -4,7 +4,7 @@ from utils.graph import Graph, read_graph
 
 # Global
 PRINT_RESULT = True
-SAVE_PATH = "./results/embeddings/NetMF.txt"
+SAVE_PATH = "./results/NetMF_embedding.txt"
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
@@ -117,8 +117,8 @@ class NetMF():
 
 if __name__ == "__main__":
     #g = read_graph('./datasets/small.txt')
-    #g = read_graph('./datasets/small_undirected_weighted.txt')
-    g = read_graph('./datasets/lesmis/lesmis.mtx')
+    g = read_graph('./datasets/small_undirected_weighted.txt')
+    #g = read_graph('./datasets/lesmis/lesmis.mtx')
     #g = read_graph('./datasets/BlogCatalog.txt')
     #g = read_graph('./datasets/com-youtube.ungraph.txt')
     
