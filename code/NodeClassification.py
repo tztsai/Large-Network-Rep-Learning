@@ -17,7 +17,6 @@ class NodeClassification():
         self.X = None
         self.y = None
 
-
     def read_file(self, embedding_path, graph_path, label_path):
         # read embedding
         self.X = []
@@ -49,7 +48,6 @@ class NodeClassification():
         clf.fit(X_train, y_train)
         # scores = cross_validate(clf, X_test, y_test, scoring='precision_macro', cv=2)
         score = clf.score(X_test, y_test)
-        print(score)
         return score
 
 
