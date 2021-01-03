@@ -14,7 +14,7 @@ BlogCatalog   undir     multiplabelled     y       y
 FLickr        undir     multilabelled      y       y             y
 Reddit        undir     single labelled  
 DBLP-Au       undir     unlabelled 
-Youtube       undir     multilabelled              
+Youtube       undir     multilabelled      y       y 
 Cora          dir       multilabelled      y       y
 Twitter       dir	unlabelled
 DBLP-Ci       dir       unlabelled         y       y
