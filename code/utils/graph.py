@@ -11,9 +11,10 @@ logger = logging.getLogger('Graph')
 
 class Graph:
 
-    def __init__(self, edges, directed=False):
+    def __init__(self, edges, labels=None, directed=False):
         self.directed = directed
         self.neighbors = {}  # dict of node context
+        self.labels = labels
 
         encode = {}  # encode nodes from 0 to #nodes-1
 
@@ -86,17 +87,26 @@ class Graph:
     def to_array(self):
         return np.array([[self[i, j] for j in range(self.num_nodes)]
                          for i in range(self.num_nodes)])
+        
 
-
-def read_graph(filename, **graph_type):
+def read_graph(graph_file, labels_file=None, **graph_type):
     t0 = time()
-    with open(filename, 'r') as f:
+    
+    with open(graph_file, 'r') as f:
         edges = ([int(s) for s in line.split()]
                  for line in f.readlines())
-    graph = Graph(edges, **graph_type)
+        
+    if labels_file:
+        with open(labels_file, 'r') as f:
+            labels = dict(line.split() for line in f.readlines())
+    else:
+        labels = None
+        
+    graph = Graph(edges, labels, **graph_type)
+    
     t1 = time()
-    logger.debug('Successfully read graph from "%s" (time: %dms).'
-                       % (filename, (t1 - t0) * 1000))
+    logger.debug('Successfully read graph from "%s"%s (time: %dms).' % 
+                 (graph_file, f' and labels from "{labels_file}"', (t1 - t0) * 1000))
     return graph
 
 
