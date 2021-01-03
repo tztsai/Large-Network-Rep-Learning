@@ -178,7 +178,7 @@ if __name__ == "__main__":
     logger.info('Using device: %s' % device)
 
     graph = read_graph(data_path)
-    model = DeepWalk(graph.num_nodes, load_model=False)
+    model = DeepWalk(graph.num_nodes, model_file=model_file)
     
     try:
         model.fit(graph)

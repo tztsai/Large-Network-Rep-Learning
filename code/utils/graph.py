@@ -1,5 +1,6 @@
 """ Graph Utilities """
 
+import random
 import logging
 import numpy as np
 from time import time
