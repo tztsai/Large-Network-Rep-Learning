@@ -2,11 +2,14 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_validate
+from sklearn.model_selection import train_test_split
 from NetMF import NetMF
+import numpy as np
 
 # Global                                                                          
-PATH = "./results/embeddings/"
-FILE_NAME = "NetMF.txt"
+EMBEDDING_PATH = "./results/NetMF_embedding.txt"
+GRAPH_PATH = "./results/NetMF_graph.txt"
+LABEL_PATH = "./results/NetMF_label.txt"
 
 class NodeClassification():
     def __init__(self):
@@ -15,29 +18,43 @@ class NodeClassification():
         self.y = None
 
 
-    def read_file(self, file_path):
-        self.embedding = []
-        with open(file_path, 'r') as f:
+    def read_file(self, embedding_path, graph_path, label_path):
+        # read embedding
+        self.X = []
+        with open(embedding_path, 'r') as f:
             lines = f.readlines()
             for i in range(len(lines)):
                 line = lines[i]
                 values = [float(x.strip()) for x in line.split()]
-                self.embedding.append(values)
-            self.embedding = np.array(self.embedding)
+                self.X.append(values)
+            self.X = np.array(self.X)
 
-        # construct inputs and labels
-        return X, y
+        # read label
+        self.y = []
+        with open(label_path, 'r') as f:
+            lines = f.readlines()
+            for i in range(len(lines)):
+                line = lines[i]
+                values = int(line.strip()) 
+                self.y.append(values)
+            self.y = np.array(self.y)
+
+        return self.X, self.y
     
     def node_classification(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-        clf = OneVsRestClassifier(LogisticRegression()).fit(X, y)
+        print(X_train, X_test, y_train, y_test)
+        # clf = OneVsRestClassifier(LogisticRegression()).fit(X, y)
+        clf = LogisticRegression(random_state=0).fit(X, y)
         clf.fit(X_train, y_train)
-        scores = cross_validate(clf, X_test, y_test, scoring='precision_macro', cv=5)
-        return np.mean(scores['test_score'])
+        # scores = cross_validate(clf, X_test, y_test, scoring='precision_macro', cv=2)
+        score = clf.score(X_test, y_test)
+        print(score)
+        return score
 
 
 if __name__ == "__main__":
     nc = NodeClassification()
-    X, y = nc.read_file(PATH+FILE_NAME)
-    score = nc.node_classification()
+    X, y = nc.read_file(EMBEDDING_PATH, GRAPH_PATH, LABEL_PATH)
+    score = nc.node_classification(X, y)
 
