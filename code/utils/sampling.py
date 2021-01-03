@@ -1,51 +1,40 @@
+import random
 import numpy as np
+
 
 class alias:
     def __init__(self, problist):
-        self.nodenumber = len(problist)
-        self.alias = np.zeros(self.nodenumber)
-        self.prob = np.zeros(self.nodenumber)
+        self.num_nodes = len(problist)
+        self.alias = np.zeros(self.num_nodes, dtype=np.int)
+        self.prob = np.zeros(self.num_nodes)
         self.setup(problist)
     
     def setup(self, problist):
-        less1 = []
-        more1 = []
+        Small = []
+        Big = []
         
-        for idnum, value in enumerate(problist):
-            self.prob[idnum] = self.nodenumber * value
-            if self.prob[idnum] >= 1:
-                more1.append(idnum)
+        for i, p in enumerate(problist):
+            self.prob[i] = self.num_nodes * p
+            if self.prob[i] >= 1:
+                Big.append(i)
             else:
-                less1.append(idnum)
+                Small.append(i)
         
-        while len(less1) > 0 and len(more1) > 0:
-            More = more1.pop()
-            Less = less1.pop()
+        while Small and Big:
+            big = Big.pop()
+            small = Small.pop()
             
-            self.alias[Less] = More
-            self.prob[More] = self.prob[More] + self.prob[Less] - 1
+            self.alias[small] = big
+            self.prob[big] = self.prob[big] + self.prob[small] - 1
             
-            if self.prob[More] >= 1:
-                more1.append(More)
+            if self.prob[big] >= 1:
+                Big.append(big)
             else:
-                less1.append(More)
+                Small.append(big)
     
     def draw(self):
-        pick = np.random.rand()
-        pnt = int(np.floor(pick * self.nodenumber))
-        
-        pick = np.random.rand()
-        if pick > self.prob[pnt]:
-            return int(self.alias[pnt])
-        else:
-            return int(pnt)
+        i = random.randrange(self.num_nodes)
+        return i if random.random() < self.prob[i] else self.alias[i]
             
-    def sample(self, number):
-        result = []
-        for i in range(number):
-            sampleres = self.draw()
-            result.append(sampleres)
-        return result
-
-
-    
+    def sample(self, size):
+        return [self.draw() for _ in range(size)]
