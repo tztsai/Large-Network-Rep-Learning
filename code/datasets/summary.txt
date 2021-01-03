@@ -1,7 +1,7 @@
 NODE CLASSIFICATION
 Name   	      dir      label               find    match      comment
 
-BlogCatalog   undir     multilabelled     
+BlogCatalog   undir     multilabelled       y      y
 PubMed        dir       labelled            y      y
 Cora          dir       multilabelled       y      y
 Reddit        undir     single labelled 
@@ -14,7 +14,7 @@ BlogCatalog   undir     multiplabelled
 FLickr        undir     multilabelled
 Reddit        undir     single labelled  
 DBLP-Au       undir     unlabelled 
-Youtube       undir     multilabelled 
+Youtube       undir     multilabelled      y       y 
 Cora          dir       multilabelled
 Twitter       dir	unlabelled
 DBLP-Ci       dir       unlabelled         y       y
