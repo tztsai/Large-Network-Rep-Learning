@@ -34,7 +34,7 @@ class Node2vec():
                 for next_neighbor, weight in self.G[neighbor].items():
                     # compute probability for each edge 
                     if next_neighbor == node:
-                        k.append(weight * (1/self.p))
+                        k.append(weight * (1/self.p))/*******
                     elif next_neighbor in self.G[node].keys():
                         k.append(weight * 1)
                     else:
