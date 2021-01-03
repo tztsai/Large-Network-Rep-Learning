@@ -63,7 +63,6 @@ class txtGreader:
         for i in result:
             edge = self.edge[i]
             
-            
             if np.random.rand() > 0.5:      
                 edge = (edge[1], edge[0])
                 
@@ -79,7 +78,7 @@ class txtGreader:
                     
                     node = self.node_sampling.draw()
                     flag = self.graph.has_edge(self.nodedict[node], self.nodedict[edge[0]])
-                   
+                    
                 vertex_i.append(edge[0])
                 vertex_j.append(node)
                 weight.append(-1)

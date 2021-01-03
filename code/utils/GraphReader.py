@@ -64,7 +64,7 @@ class Greader:
                     
                     node = self.node_sampling.draw()
                     flag = self.graph.has_edge(self.nodedict[node], self.nodedict[edge[0]])
-                   
+                    
                 vertex_i.append(edge[0])
                 vertex_j.append(node)
                 weight.append(-1)
