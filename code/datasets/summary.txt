@@ -1,4 +1,4 @@
-datasets for node classification:
+NODE CLASSIFICATION
 Name   	      dir      label               find    match      comment
 
 BlogCatalog   undir     multilabelled     
