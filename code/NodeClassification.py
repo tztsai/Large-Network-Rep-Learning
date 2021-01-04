@@ -8,16 +8,14 @@ import numpy as np
 
 # Global                                                                          
 EMBEDDING_PATH = "./results/NetMF_embedding.txt"
-GRAPH_PATH = "./results/NetMF_graph.txt"
 LABEL_PATH = "./results/NetMF_label.txt"
 
 class NodeClassification():
     def __init__(self):
-        self.embedding = None
         self.X = None
         self.y = None
 
-    def read_file(self, embedding_path, graph_path, label_path):
+    def read_file(self, embedding_path, label_path):
         # read embedding
         self.X = []
         with open(embedding_path, 'r') as f:
@@ -42,7 +40,6 @@ class NodeClassification():
     
     def node_classification(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-        print(X_train, X_test, y_train, y_test)
         # clf = OneVsRestClassifier(LogisticRegression()).fit(X, y)
         clf = LogisticRegression(random_state=0).fit(X, y)
         clf.fit(X_train, y_train)
@@ -53,6 +50,6 @@ class NodeClassification():
 
 if __name__ == "__main__":
     nc = NodeClassification()
-    X, y = nc.read_file(EMBEDDING_PATH, GRAPH_PATH, LABEL_PATH)
+    X, y = nc.read_file(EMBEDDING_PATH, LABEL_PATH)
     score = nc.node_classification(X, y)
 
