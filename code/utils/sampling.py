@@ -4,9 +4,9 @@ import numpy as np
 
 class alias:
     def __init__(self, problist):
-        self.num_nodes = len(problist)
-        self.alias = np.zeros(self.num_nodes, dtype=np.int)
-        self.prob = np.zeros(self.num_nodes)
+        self.n = len(problist)
+        self.alias = np.zeros(self.n, dtype=np.int)
+        self.prob = np.zeros(self.n)
         self.setup(problist)
     
     def setup(self, problist):
@@ -14,7 +14,7 @@ class alias:
         Big = []
         
         for i, p in enumerate(problist):
-            self.prob[i] = self.num_nodes * p
+            self.prob[i] = self.n * p
             if self.prob[i] >= 1:
                 Big.append(i)
             else:
@@ -33,7 +33,7 @@ class alias:
                 Small.append(big)
     
     def draw(self):
-        i = random.randrange(self.num_nodes)
+        i = random.randrange(self.n)
         return i if random.random() < self.prob[i] else self.alias[i]
             
     def sample(self, size):

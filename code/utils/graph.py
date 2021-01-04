@@ -4,7 +4,7 @@ import random
 import logging
 import numpy as np
 from time import time
-import numpy.random as npr
+from sampling import alias
 
 logger = logging.getLogger('Graph')
 
@@ -47,6 +47,8 @@ class Graph:
 
         self.decode = {i: v for v, i in encode.items()}
 
+        self.node_sampling = alias([self.weight(v) for v in self.nodes])
+
         logger.debug(f"Constructed a{' directed' if directed else 'n undirected'}"
                      f" graph (V={self.num_nodes}, E={self.num_edges}).")
 
@@ -82,7 +84,7 @@ class Graph:
         else:
             return self[u, v]
         
-    def sample_neighbors(self, node, k=1):
+    def sample_neighbors(self, node, k=1, seed=None):
         """
         Generate a sample of neighbors of the node.
 
@@ -93,6 +95,7 @@ class Graph:
         Returns:
             a random neighbor if k = 1; otherwise a list of sampled neighbors
         """
+        random.seed(seed)
         neighbors = list(self[node])
         sample = random.sample(neighbors, k)
         return sample[0] if k == 1 else sample

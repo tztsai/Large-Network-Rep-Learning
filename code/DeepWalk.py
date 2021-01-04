@@ -21,9 +21,19 @@ class RandomWalk:
     wl = 6                  # walk length
     ws = 2                  # window size
     
-    def __init__(self, graph):
+    def __init__(self, graph, walklen=None, windowsize=None):
         self.G = graph
         self.N = graph.num_nodes
+        
+        if walklen is None:
+            self.wl = RandomWalk.wl
+        else:
+            self.wl = walklen
+
+        if windowsize is None:
+            self.ws = RandomWalk.ws
+        else:
+            self.ws = windowsize
 
     def walk(self):
         """Generate a random walk for each node."""
