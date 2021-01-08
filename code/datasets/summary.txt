@@ -4,7 +4,7 @@ Name   	      dir      label               find    match     preprocessed   comm
 BlogCatalog   undir     multilabelled       y      y			y
 PubMed        dir       labelled            y      y
 Cora          dir       multilabelled       y      y
-Reddit        undir     single labelled 	y
+Reddit        undir     single labelled 	y		y			y
 Flickr        undir     multilabelled		y		y			y
 Youtube       undir     multilabelled
 Cocit         dir       lablled             y       y           y
@@ -12,7 +12,7 @@ Cocit         dir       lablled             y       y           y
 LINK PREDICTION
 BlogCatalog   undir     multiplabelled		y		y			y
 FLickr        undir     multilabelled       y       y           y
-Reddit        undir     single labelled  	y
+Reddit        undir     single labelled  	y		y			y
 Flickr        undir     multilabelled      y       y            y
 Youtube       undir     multilabelled      y       y
 Cocit         dir       lablled            y       y            y
@@ -20,7 +20,7 @@ Cocit         dir       lablled            y       y            y
 LINK PREDICTION
 BlogCatalog   undir     multiplabelled     y       y			y
 FLickr        undir     multilabelled      y       y            y
-Reddit        undir     single labelled  
+Reddit        undir     single labelled		y		y			y
 DBLP-Au       undir     unlabelled 
 Youtube       undir     multilabelled      y       y 
 Cora          dir       multilabelled      y       y
