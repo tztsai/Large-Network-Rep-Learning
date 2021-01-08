@@ -4,7 +4,7 @@ import random
 import logging
 import numpy as np
 from time import time
-from sampling import alias
+from .sampling import alias
 
 logger = logging.getLogger('Graph')
 
@@ -47,7 +47,7 @@ class Graph:
 
         self.decode = {i: v for v, i in encode.items()}
 
-        self.node_sampling = alias([self.weight(v) for v in self.nodes])
+        self._neg_sampler = None
 
         logger.debug(f"Constructed a{' directed' if directed else 'n undirected'}"
                      f" graph (V={self.num_nodes}, E={self.num_edges}).")
@@ -97,9 +97,21 @@ class Graph:
         """
         random.seed(seed)
         neighbors = list(self[node])
+        if k > len(neighbors):
+            return neighbors
         sample = random.sample(neighbors, k)
         return sample[0] if k == 1 else sample
-        
+
+    def noise_sample(self):
+        if self._neg_sampler is None:
+            # init negative sampler
+            node_weights = np.array([self.weight(u) for u in self.nodes], dtype=np.float)
+            node_weights /= sum(node_weights)  # normalize
+            prob_dist = np.array([w ** 0.75 for w in node_weights])
+            self._neg_sampler = alias(prob_dist)
+
+        return self._neg_sampler.draw()
+
     def to_array(self):
         return np.array([[self[i, j] for j in range(self.num_nodes)]
                          for i in range(self.num_nodes)])
@@ -133,7 +145,8 @@ def read_graph(graph_file, labels_file=None, multi_labels=False, **graph_type):
     
     t1 = time()
     logger.debug('Successfully read graph from "%s"%s (time: %dms).' % 
-                 (graph_file, f' and labels from "{labels_file}"', (t1 - t0) * 1000))
+                 (graph_file, f' and labels from "{labels_file}"' if labels_file else '',
+                  (t1 - t0) * 1000))
     return graph
 
 

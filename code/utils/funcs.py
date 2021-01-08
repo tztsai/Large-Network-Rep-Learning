@@ -25,11 +25,22 @@ def split_array(a: np.ndarray, m):
 
 
 def norm(x):
-    return np.linalg.norm(x)
+    return torch.sqrt(torch.sum(x ** 2))
 
 
 def cos_similarity(x, y):
     return (x@y) / np.sqrt((x@x) * (y@y))
+
+
+def log_sigmoid(x):
+    return -np.log(1 + np.exp(-x))
+
+
+def init_param(*shape):
+    n = shape[0]
+    w = torch.rand(*shape) / np.sqrt(n)
+    w = torch.nn.Parameter(w)
+    return w
 
 
 def timer(f):
@@ -50,12 +61,3 @@ def timer(f):
                f'{ms}ms'))
         return result
     return wrapped
-
-
-@timer
-def test(a):
-    for _ in range(a):
-        pass
- 
-test(1000000)
-test(10000000000)
