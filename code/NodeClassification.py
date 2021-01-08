@@ -32,9 +32,15 @@ class NodeClassification():
     
     def node_classification(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+        # one-vs-rest logistic regression
         clf = OneVsRestClassifier(LogisticRegression(random_state=0)).fit(X_train, y_train)
         score = clf.score(X_test, y_test)
+        # use max-vote
+        # to do
         return score
+
+    def max_vote(self):
+        pass
 
 
 if __name__ == "__main__":
