@@ -25,6 +25,6 @@ DBLP-Au       undir     unlabelled
 Youtube       undir     multilabelled      y       y 
 Cora          dir       multilabelled      y       y
 Twitter       dir	unlabelled
-DBLP-Ci       dir       unlabelled         y       y
-Epinion       dir       unlabelled         y       y             y
+DBLP-Ci       dir       unlabelled         y       y			y
+Epinion       dir       unlabelled         y       y            y
 
