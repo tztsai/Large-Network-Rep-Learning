@@ -9,7 +9,8 @@ import numpy as np
 
 # Global                                                                          
 SEED = 0
-EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+#EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
 # EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
 LABEL_PATH = "./test/blogcataloglabel.txt"
 

@@ -17,19 +17,19 @@ LABEL_PATH = "./test/blogcataloglabel.txt"
 
 class LinkPrediction():
     def __init__(self):
-        self.embedding = None
+        self.embeddings = None
         self.graph = None
-        self.y = None
+        self.labels = None
 
     def read_file(self, embedding_path, graph_path, label_path):
         # read embedding
-        self.embedding = []
+        self.embeddings = []
         with open(embedding_path, 'r') as f:
             lines = f.readlines()
             for i in range(len(lines)):
                 line = lines[i]
                 values = [float(x.strip()) for x in line.split()]
-                self.embedding.append(values)
+                self.embeddings.append(values)
 
         # read graph
         self.graph = txtGreader(graph_path, direct=False, weighted=True).graph
@@ -42,7 +42,7 @@ class LinkPrediction():
 
         print(self.graph)
         # return value
-        return self.embedding, self.graph, self.y
+        return self.embeddings, self.graph, self.y
 
     def preprocess_graph(self):
         sm = nx.to_scipy_sparse_matrix(self.graph)
