@@ -9,9 +9,9 @@ import numpy as np
 
 # Global                                                                          
 SEED = 0
-#EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
-EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
-# EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
+# EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+# EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
+EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
 LABEL_PATH = "./test/blogcataloglabel.txt"
 
 class NodeClassification():
@@ -34,7 +34,6 @@ class NodeClassification():
         return self.X, self.y
     
     def node_classification(self, X, y):
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED)
         # one-vs-rest logistic regression
         clf = OneVsRestClassifier(LogisticRegression(random_state=SEED))
         # report Micro-F1 and Macro-F1 scores
