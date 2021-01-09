@@ -34,7 +34,7 @@ class Node2vec():
                 for next_neighbor, weight in self.G[neighbor].items():
                     # compute probability for each edge 
                     if next_neighbor == node:
-                        k.append(weight * (1/self.p))/*******
+                        k.append(weight * (1/self.p))
                     elif next_neighbor in self.G[node].keys():
                         k.append(weight * 1)
                     else:
@@ -60,6 +60,8 @@ class Node2vec():
         walks = [[str(node) for node in walk] for walk in walks]
         model = Word2Vec(walks, size=d, window=ws, min_count=0)
         model.save_word2vec_format(save_path)
+
+
 
 
 
@@ -142,10 +144,32 @@ def alias_draw(J, q):
 # i.e. for every node we walk num of walk times with a walk length 
 # node classification ---> Micro-F1 and Macro-F1.
 
+def decode_embeddings(graph: Graph, load_path, save_path):
+    with open(load_path) as f:
+        lines = [line[:-1] for line in f.readlines()]
+    
+    new_embed = []
+    for line in lines:
+        no, *embeddings = line.split(' ')
+        new_embed.append([graph.decode[int(no)], *embeddings])
+
+    with open(save_path, 'w') as f:
+        for line in new_embed:
+            for cnt, ele in enumerate(line):
+                if cnt == len(line) - 1:
+                    f.write(str(ele) + '\n')
+                else:
+                    f.write(str(ele) + ' ')
+        
+
+
+
+
 if __name__ == "__main__":
 
-    graph = read_graph('datasets/karate.edgelist', directed=False)
-    n2v = Node2vec(graph, P, Q)
-    n2v.compute_transfer_prob()
+    graph = read_graph('datasets/blogcatalog/blogcatalogedge.txt', directed=False)
+    # n2v = Node2vec(graph, P, Q)
+    # n2v.compute_transfer_prob()
 
-    n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, 'models/node2vec_karate.embed')
+    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, 'models/node2vec_lesmix.embed')
+    decode_embeddings(graph, 'models/node2vec_blogcatalog.embed', 'models/node2vec_blogcatalog_sort.embed')
