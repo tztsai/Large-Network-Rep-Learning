@@ -29,7 +29,7 @@ class NodeClassification():
                 values = [float(x.strip()) for x in line.split()]
                 self.X.append(values)
             self.X = np.array(self.X)
-        # read label
+        # read labels
         self.y = process_labels(label_path)
         return self.X, self.y
     
