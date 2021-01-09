@@ -5,6 +5,7 @@ from utils.graph import Graph, read_graph
 # Global
 PRINT_RESULT = True
 SAVE_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+SAVE_PATH_DECODED = "./test/blogcatalog_NetMF_embedding_decoded.txt"
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
@@ -112,7 +113,28 @@ class NetMF():
         return np.dot(U_d, np.sqrt(Sigma_d)).astype(np.float64)
 
     def save_embedding(self, embedding, path):
-        np.savetxt(path, embedding)
+        name = np.zeros((self.G.num_nodes, 1))
+        for i in range(self.G.num_nodes):
+            name[i][0] = i
+        res = np.hstack((name, embedding))
+        np.savetxt(path, res)
+    
+    def decode_embeddings(self, graph: Graph, load_path, save_path):
+        with open(load_path) as f:
+            lines = [line[:-1] for line in f.readlines()]
+    
+        new_embed = []
+        for line in lines:
+            no, *embeddings = line.split(' ')
+            new_embed.append([graph.decode[int(eval(no))], *embeddings])
+
+        with open(save_path, 'w') as f:
+            for line in new_embed:
+                for cnt, ele in enumerate(line):
+                    if cnt == len(line) - 1:
+                        f.write(str(ele) + '\n')
+                    else:
+                        f.write(str(ele) + ' ')
 
 
 if __name__ == "__main__":
@@ -126,9 +148,10 @@ if __name__ == "__main__":
     nmf = NetMF(g)
     # res_small = nmf.NetMF_small_T(g)
     res_large = nmf.NetMF_large_T(g)
-    if PRINT_RESULT:
+    # if PRINT_RESULT:
         # print(res_small)
         # print("")
-        print(res_large)
+        # print(res_large)
     # nmf.save_embedding(res_small, SAVE_PATH)
     nmf.save_embedding(res_large, SAVE_PATH)
+    nmf.decode_embeddings(g, SAVE_PATH, SAVE_PATH_DECODED)
