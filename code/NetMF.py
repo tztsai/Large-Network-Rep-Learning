@@ -124,11 +124,11 @@ if __name__ == "__main__":
     #g = read_graph('./datasets/com-youtube.ungraph.txt')
     
     nmf = NetMF(g)
-    #res_small = nmf.NetMF_small_T(g)
+    # res_small = nmf.NetMF_small_T(g)
     res_large = nmf.NetMF_large_T(g)
     if PRINT_RESULT:
-        #print(res_small)
-        #print("")
+        # print(res_small)
+        # print("")
         print(res_large)
     # nmf.save_embedding(res_small, SAVE_PATH)
     nmf.save_embedding(res_large, SAVE_PATH)
