@@ -3,12 +3,12 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_validate
 from sklearn.model_selection import train_test_split
-from NetMF import NetMF
 from utils.process_labels import *
 import numpy as np
 
 # Global                                                                          
-EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+# EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
 LABEL_PATH = "./test/blogcataloglabel.txt"
 
 class NodeClassification():
@@ -36,6 +36,8 @@ class NodeClassification():
         clf = OneVsRestClassifier(LogisticRegression(random_state=0)).fit(X_train, y_train)
         score = clf.score(X_test, y_test)
         # use max-vote
+        # to do
+        # report Micro-F1 and Macro-F1 scores
         # to do
         return score
 
