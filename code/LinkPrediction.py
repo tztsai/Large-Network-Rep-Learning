@@ -40,6 +40,7 @@ class LinkPrediction():
         # read labels
         self.y = process_labels(label_path)
 
+        print(self.graph)
         # return value
         return self.embedding, self.graph, self.y
 

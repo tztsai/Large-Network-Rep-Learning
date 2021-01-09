@@ -3,12 +3,14 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_validate
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
 from utils.process_labels import *
 import numpy as np
 
 # Global                                                                          
-# EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
-EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
+SEED = 0
+EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+# EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
 LABEL_PATH = "./test/blogcataloglabel.txt"
 
 class NodeClassification():
@@ -31,23 +33,20 @@ class NodeClassification():
         return self.X, self.y
     
     def node_classification(self, X, y):
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED)
         # one-vs-rest logistic regression
-        clf = OneVsRestClassifier(LogisticRegression(random_state=0)).fit(X_train, y_train)
-        score = clf.score(X_test, y_test)
-        # use max-vote
-        # to do
+        clf = OneVsRestClassifier(LogisticRegression(random_state=SEED))
         # report Micro-F1 and Macro-F1 scores
-        # to do
-        return score
-
-    def max_vote(self):
-        pass
+        ma_scores = cross_val_score(clf, X, y, cv=5, scoring='f1_macro')
+        mi_scores = cross_val_score(clf, X, y, cv=5, scoring='f1_micro')
+        return np.mean(ma_scores), np.mean(mi_scores)
 
 
 if __name__ == "__main__":
     nc = NodeClassification()
     X, y = nc.read_file(EMBEDDING_PATH, LABEL_PATH)
-    score = nc.node_classification(X, y)
-    print("Accurancy for node classification: ", score)
+    ma_score, mi_score = nc.node_classification(X, y)
+    print("Accurancy for node classification: ")
+    print("Micro-F1 score: ", mi_score)
+    print("Macro-F1 score: ", ma_score)
 
