@@ -6,32 +6,43 @@ import scipy.sparse as sp
 from NetMF import NetMF
 from sklearn.metrics import roc_auc_score
 from utils.txtGraphReader import txtGreader 
-from gae.preprocessing import mask_test_edges
+from utils.process_labels import *
+#from gae.preprocessing import mask_test_edges
 
 # Global                                                                          
-EMBEDDING_PATH = "./results/NetMF_embedding.txt"
-GRAPH_PATH = "./results/NetMF_graph.txt"
+# EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
+GRAPH_PATH = "./test/blogcatalogedge.txt"
+LABEL_PATH = "./test/blogcataloglabel.txt"
 
 class LinkPrediction():
     def __init__(self):
-        self.embedding = None
+        self.embeddings = None
         self.graph = None
+        self.labels = None
 
-    def read_file(self, embedding_path, graph_path):
+    def read_file(self, embedding_path, graph_path, label_path):
         # read embedding
-        self.embedding = []
+        self.embeddings = []
         with open(embedding_path, 'r') as f:
             lines = f.readlines()
             for i in range(len(lines)):
                 line = lines[i]
                 values = [float(x.strip()) for x in line.split()]
-                self.embedding.append(values)
+                self.embeddings.append(values)
 
         # read graph
         self.graph = txtGreader(graph_path, direct=False, weighted=True).graph
         self.graph = self.graph.to_undirected()
         #nx.draw_networkx(self.graph, with_labels=False, node_size=6, node_color='r')
         #plt.show()
+
+        # read labels
+        self.y = process_labels(label_path)
+
+        print(self.graph)
+        # return value
+        return self.embeddings, self.graph, self.y
 
     def preprocess_graph(self):
         sm = nx.to_scipy_sparse_matrix(self.graph)
@@ -57,6 +68,6 @@ class LinkPrediction():
 
 if __name__ == "__main__":
     lp = LinkPrediction()
-    lp.read_file(EMBEDDING_PATH, GRAPH_PATH)
+    lp.read_file(EMBEDDING_PATH, GRAPH_PATH, LABEL_PATH)
     lp.preprocess_graph()
     # lp.get_ROC_AUC_score()

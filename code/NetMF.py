@@ -8,8 +8,8 @@ SAVE_PATH = "./test/blogcatalog_NetMF_embedding.txt"
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
-PARAMETER_b = 5 # number of negative samples(ns), 1, 5 for option
-PARAMETER_d = 8 # dimension of embedding space
+PARAMETER_b = 1 # number of negative samples(ns), 1, 5 for option
+PARAMETER_d = 128 # dimension of embedding space
 PARAMETER_h = 256 # number of eigenpairs (rank), 16384 for Flickr, 256 for others
 
 
@@ -124,11 +124,11 @@ if __name__ == "__main__":
     #g = read_graph('./datasets/com-youtube.ungraph.txt')
     
     nmf = NetMF(g)
-    res_small = nmf.NetMF_small_T(g)
+    #res_small = nmf.NetMF_small_T(g)
     res_large = nmf.NetMF_large_T(g)
     if PRINT_RESULT:
-        print(res_small)
-        print("")
+        #print(res_small)
+        #print("")
         print(res_large)
     # nmf.save_embedding(res_small, SAVE_PATH)
     nmf.save_embedding(res_large, SAVE_PATH)
