@@ -1,20 +1,20 @@
 import tensorflow as tf
 import numpy as np
 import networkx as nx
-import pickle
+
 
 from utils.GraphReader import Greader #For pkl
 from utils.txtGraphReader import txtGreader #For txt
 
 def main():
     mode = "train" #"test" or "train"
-    filename = "unweight.txt" 
+    filename = "./datasets/blogcatalog/blogcatalogedge.txt" 
     FOSO = "second_order" #"first_order" or "second_order"
     lr = 0.025 #learning rate
-    batch_size = 10
+    batch_size = 128
     batch_num = 10000
-    K = 3 #negative edge number
-    dim = 3 #embedding dimension
+    K = 5 #negative edge number
+    dim = 128 #embedding dimension
     
     if mode == "train":
         train(filename, FOSO, lr, batch_size, batch_num, K, dim)
@@ -22,7 +22,7 @@ def main():
         test()
 
 def train(filename, FOSO, lr, batch_size, batch_num, K, dim):
-    data = txtGreader(filename, direct = False, weighted = False)
+    data = txtGreader(filename, direct = False, weighted = True)
     
 
     nodenum = data.node_num
@@ -67,7 +67,22 @@ def train(filename, FOSO, lr, batch_size, batch_num, K, dim):
                     embeddingdict[node] = normalized_embedding[index]
                 
                 #write
-                #pickle.dump(embeddingdict,open('embedding_%s.pkl' % FOSO, 'wb'))
+                
+                f = open("Line1embd_%s.txt" % FOSO, "w")
+                embdkeylist = []
+                
+                for key in embeddingdict.keys():
+                    embdkeylist.append(int(key))
+                
+                embdkeylist.sort()
+                
+                for key in embdkeylist:
+                    
+                    embdwrite = embeddingdict[str(key)]
+                    f.write(str(key)+" ")
+                    for item in embdwrite:
+                        f.write(str(item)+" ")
+                    f.write("\n")
 
 def test():
     pass
