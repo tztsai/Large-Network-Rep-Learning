@@ -84,7 +84,7 @@ class Graph:
         else:
             return self[u, v]
         
-    def sample_neighbors(self, node, k=1, seed=None):
+    def sample_neighbors(self, node, k=1):
         """
         Generate a sample of neighbors of the node.
 
@@ -95,10 +95,10 @@ class Graph:
         Returns:
             a random neighbor if k = 1; otherwise a list of sampled neighbors
         """
-        random.seed(seed)
         neighbors = list(self[node])
         if k > len(neighbors):
             return neighbors
+
         sample = random.sample(neighbors, k)
         return sample[0] if k == 1 else sample
 

@@ -24,19 +24,12 @@ def split_array(a: np.ndarray, m):
     return [a[i*l : (i+1)*l] for i in range(m)]
 
 
-def norm(x):
-    return torch.sqrt(torch.sum(x ** 2))
-
-
 def cos_similarity(x, y):
     return (x@y) / np.sqrt((x@x) * (y@y))
 
 
-def log_sigmoid(x):
-    return -np.log(1 + np.exp(-x))
-
-
 def init_param(*shape):
+    """Use Xavier initialization to create an NN parameter"""
     n = shape[0]
     w = torch.rand(*shape) / np.sqrt(n)
     w = torch.nn.Parameter(w)

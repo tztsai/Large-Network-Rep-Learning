@@ -10,8 +10,8 @@ from utils.process_labels import *
 #from gae.preprocessing import mask_test_edges
 
 # Global                                                                          
-# EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding.txt"
-EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
+EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding_decoded.txt"
+# EMBEDDING_PATH = "./test/node2vec_blogcatalog.embed"
 GRAPH_PATH = "./test/blogcatalogedge.txt"
 LABEL_PATH = "./test/blogcataloglabel.txt"
 
@@ -30,19 +30,18 @@ class LinkPrediction():
                 line = lines[i]
                 values = [float(x.strip()) for x in line.split()]
                 self.embeddings.append(values)
+        self.embeddings = np.array(sorted(self.embeddings, key=(lambda x:x[0]), reverse=False))
 
         # read graph
         self.graph = txtGreader(graph_path, direct=False, weighted=True).graph
         self.graph = self.graph.to_undirected()
-        #nx.draw_networkx(self.graph, with_labels=False, node_size=6, node_color='r')
-        #plt.show()
 
         # read labels
-        self.y = process_labels(label_path)
+        self.labels = process_labels(label_path)
+        self.labels = np.array(sorted(self.labels, key=(lambda x:x[0]), reverse=False))
 
-        print(self.graph)
         # return value
-        return self.embeddings, self.graph, self.y
+        return self.embeddings, self.graph, self.labels
 
     def preprocess_graph(self):
         sm = nx.to_scipy_sparse_matrix(self.graph)
@@ -69,5 +68,5 @@ class LinkPrediction():
 if __name__ == "__main__":
     lp = LinkPrediction()
     lp.read_file(EMBEDDING_PATH, GRAPH_PATH, LABEL_PATH)
-    lp.preprocess_graph()
+    # lp.preprocess_graph()
     # lp.get_ROC_AUC_score()
