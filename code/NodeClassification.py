@@ -1,10 +1,6 @@
-from sklearn.model_selection import ShuffleSplit
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_validate
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from utils.process_labels import *
 import numpy as np
 
 # Global                                                                          
@@ -32,10 +28,37 @@ class NodeClassification():
             self.X = np.array(self.X)
             self.X = np.array(sorted(self.X, key=(lambda x:x[0]), reverse=False))
         # read labels
-        self.y = process_labels(label_path)
+        self.y = self.process_labels(label_path)
         self.y = np.array(sorted(self.y, key=(lambda x:x[0]), reverse=False))
         return self.X, self.y
     
+    def process_labels(self, label_path):
+        all_labels = set()
+        # read label
+        y = []
+        name = []
+        with open(label_path, 'r') as f:
+            lines = f.readlines()
+            for i in range(len(lines)):
+                line = lines[i]
+                values = [int(x.strip()) for x in line.split()]
+                y.append(values[1:])
+                name.append(np.array([values[0]]))
+                for value in values[1:]:
+                    all_labels.add(value)
+            y = np.array(y)
+            name = np.array(name)
+
+        # tranform to boolean matrix
+        boolean_matrix = np.zeros((len(y),len(all_labels)))
+        for i in range(len(y)):
+            for value in y[i]:
+                boolean_matrix[i][value] = 1
+
+        # assemble
+        res = np.hstack((name, boolean_matrix))
+        return res
+
     def node_classification(self, X, y):
         # one-vs-rest logistic regression
         clf = OneVsRestClassifier(LogisticRegression(random_state=SEED))
