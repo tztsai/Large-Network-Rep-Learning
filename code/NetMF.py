@@ -4,12 +4,13 @@ from utils.graph import Graph, read_graph
 
 # Global
 PRINT_RESULT = True
-SAVE_PATH = "./results/NetMF_embedding.txt"
+SAVE_PATH = "./test/blogcatalog_NetMF_embedding.txt"
+SAVE_PATH_DECODED = "./test/blogcatalog_NetMF_embedding_decoded.txt"
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
-PARAMETER_b = 5 # number of negative samples(ns), 1, 5 for option
-PARAMETER_d = 8 # dimension of embedding space
+PARAMETER_b = 1 # number of negative samples(ns), 1, 5 for option
+PARAMETER_d = 128 # dimension of embedding space
 PARAMETER_h = 256 # number of eigenpairs (rank), 16384 for Flickr, 256 for others
 
 
@@ -112,22 +113,45 @@ class NetMF():
         return np.dot(U_d, np.sqrt(Sigma_d)).astype(np.float64)
 
     def save_embedding(self, embedding, path):
-        np.savetxt(path, embedding)
+        name = np.zeros((self.G.num_nodes, 1))
+        for i in range(self.G.num_nodes):
+            name[i][0] = i
+        res = np.hstack((name, embedding))
+        np.savetxt(path, res)
+    
+    def decode_embeddings(self, graph: Graph, load_path, save_path):
+        with open(load_path) as f:
+            lines = [line[:-1] for line in f.readlines()]
+    
+        new_embed = []
+        for line in lines:
+            no, *embeddings = line.split(' ')
+            new_embed.append([graph.decode[int(eval(no))], *embeddings])
+
+        with open(save_path, 'w') as f:
+            for line in new_embed:
+                for cnt, ele in enumerate(line):
+                    if cnt == len(line) - 1:
+                        f.write(str(ele) + '\n')
+                    else:
+                        f.write(str(ele) + ' ')
 
 
 if __name__ == "__main__":
     #g = read_graph('./datasets/small.txt')
-    g = read_graph('./datasets/small_undirected_weighted.txt')
+    #g = read_graph('./datasets/small_undirected_weighted.txt')
+    g = read_graph('./test/blogcatalogedge.txt')
     #g = read_graph('./datasets/lesmis/lesmis.mtx')
     #g = read_graph('./datasets/BlogCatalog.txt')
     #g = read_graph('./datasets/com-youtube.ungraph.txt')
     
     nmf = NetMF(g)
-    res_small = nmf.NetMF_small_T(g)
+    # res_small = nmf.NetMF_small_T(g)
     res_large = nmf.NetMF_large_T(g)
-    if PRINT_RESULT:
-        print(res_small)
-        print("")
-        print(res_large)
+    # if PRINT_RESULT:
+        # print(res_small)
+        # print("")
+        # print(res_large)
     # nmf.save_embedding(res_small, SAVE_PATH)
     nmf.save_embedding(res_large, SAVE_PATH)
+    nmf.decode_embeddings(g, SAVE_PATH, SAVE_PATH_DECODED)
