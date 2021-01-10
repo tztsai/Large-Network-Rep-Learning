@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from time import time
 from utils.graph import Graph, read_graph
 from utils.huffman import HuffmanTree
-from utils.funcs import pbar, cos_similarity, init_param
+from utils.funcs import pbar, timer, cos_similarity, init_param
 import config
 
 logger = logging.getLogger('DeepWalk')
@@ -126,9 +126,11 @@ class DeepWalk(nn.Module):
             except FileNotFoundError:
                 logger.warning('Model file "%s" not found. A new model is initialized.')
 
+    @timer
     def fit(self, epochs=10, epoch_iters=10):
         for epoch in range(epochs):
-            logger.info('\nEpoch: %d' % epoch)
+            print()
+            logger.info('Epoch: %d' % epoch)
             start_time = time()
 
             sample = self.sampler.sample()
@@ -149,8 +151,7 @@ class DeepWalk(nn.Module):
                 logger.info('\tLoss = %.3e' % total_loss)
 
             end_time = time()
-            logger.info('Time cost: %dms' %
-                        (1000 * (end_time - start_time)))
+            logger.info('Time cost: %dms' % int(1000*(end_time - start_time)))
         
     def save(self, path):
         logger.info(f'Saving model to {path}')
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     print('Dataset:', dataset, end='\n\n')
     
     model_file = f'models/{dataset}_deepwalk.pt'
-    array_file = f'models/{dataset}_deepwalk.txt'
+    emb_file = f'results/{dataset}_deepwalk.txt'
 
     print('Using device:', device)
 
@@ -198,4 +199,4 @@ if __name__ == "__main__":
         print('Training stopped.')
     finally:
         model.save(model_file)
-        model.save_embedding(array_file)
+        model.save_embedding(emb_file)
