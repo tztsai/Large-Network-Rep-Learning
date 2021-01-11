@@ -39,7 +39,8 @@ class LinkPrediction():
         self.embeddings = np.array(sorted(self.embeddings, key=(lambda x:x[0]), reverse=False))
 
         # read graph
-        self.graph = txtGreader(graph_path, direct=False, weighted=True).graph
+        data_loader = txtGreader(graph_path, direct=False, weighted=True)
+        self.graph = data_loader.graph
         self.graph = self.graph.to_undirected()
 
         # read labels
@@ -88,7 +89,7 @@ class LinkPrediction():
                 cur_e = sample(list(graph.edges), 1)[0]
                 # check if isolated
                 if graph.degree[cur_e[0]] != 1 and graph.degree[cur_e[1]] != 1:
-                    graph.remove_edge(cur_e[0], cur_e[1])
+                    graph.remove_edge(cur_e[0], cur_e[1])#记得更新dataloader, data_loader.graph_update(graph)
                     removed_edges.append(cur_e)
                     removed = True
 
@@ -103,7 +104,24 @@ class LinkPrediction():
                     graph.add_edge(pair[0], pair[1])
                     added = True
         """
-        return graph
+        negative_edges = []#我觉着要不先做negative sampling
+        for i in range(remove_size):
+        
+            flag = True
+            while flag:
+                index1 = data_loader.node_sampling.draw()#目前权重是degree^0.75
+                index2 = data_loader.node_sampling.draw()
+                flag = graph.has_edge(data_loader.nodedict[index1], data_loader.nodedict[index2])
+            negative_edges.append(data_loader.nodedict[index1], data_loader.nodedict[index2])
+            
+        testsplit = []
+        for item in removed_edges:
+            testsplit.append([item,1])
+        for item in negative_edges:
+            testsplit.append([item,-1])
+        
+        
+        return graph, testsplit
 
     def cal_distance(self, graph):
         print(graph.edges(data=True))

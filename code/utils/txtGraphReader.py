@@ -6,12 +6,17 @@ class txtGreader:
     def __init__(self, filename, direct = False, weighted = False):
         self.filename = filename
         self.direct = direct
+        self.weighted = weighted
         
-        if weighted:
+        if self.weighted:
             self.graph = nx.read_edgelist(self.filename, nodetype = str, data = [("weight", float)], create_using = nx.DiGraph())
         else:
             self.graph = nx.read_edgelist(self.filename, nodetype = str, create_using = nx.DiGraph())
         
+        self.graph_update(self.graph)
+        
+    def graph_update(self, graph):
+        self.graph = graph
         self.edge_num = self.graph.number_of_edges()
         self.node_num = self.graph.number_of_nodes()
         
@@ -26,7 +31,7 @@ class txtGreader:
             self.indexdict[node] = index
         
         self.edge = []
-        if weighted:
+        if self.weighted:
             self.edge_dist = np.zeros(self.edge_num)
             for index, (pt1, pt2, weight) in enumerate(self.edgewithweight):
                 self.edge.append((self.indexdict[pt1], self.indexdict[pt2]))
@@ -41,7 +46,7 @@ class txtGreader:
         self.node_degree = np.zeros(self.node_num)
         for index in range(self.node_num):
             node = self.nodedict[index]
-            if weighted:
+            if self.weighted:
                 self.node_degree[index] = self.graph.degree(node, weight="weight")
             else:
                 self.node_degree[index] = self.graph.degree(node)
