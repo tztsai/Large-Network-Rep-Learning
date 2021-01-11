@@ -92,9 +92,21 @@ class LinkPrediction():
                     removed_edges.append(cur_e)
                     removed = True
 
+        """
         # add negative edges, 1 for each removed edge between random vertex pairs
         for i in range(remove_size):
-            pass
+            added = False
+            while added == False:
+                pair = sample(list(graph.nodes), 2)
+                # check if connected
+                if (pair[0], pair[1]) not in graph.edges:
+                    graph.add_edge(pair[0], pair[1])
+                    added = True
+        """
+        return graph
+
+    def cal_distance(self, graph):
+        print(graph.edges(data=True))
 
 
     def get_ROC_AUC_score(self, y_true, y_score):
@@ -116,5 +128,6 @@ class LinkPrediction():
 if __name__ == "__main__":
     lp = LinkPrediction()
     e, g, l = lp.read_file(EMBEDDING_PATH, GRAPH_PATH, LABEL_PATH)
-    lp.preprocess_graph(g)
+    g = lp.preprocess_graph(g)
+    dist = lp.cal_distance(g)
     # lp.get_ROC_AUC_score()
