@@ -54,3 +54,11 @@ def timer(f):
                f'{ms}ms'))
         return result
     return wrapped
+
+
+def write_embedding(filename, graph, embedding):
+    with open(filename, 'w') as f:
+        for v in graph.nodes:
+            f.write('%d %s\n' %
+                    (graph.decode[v],
+                     str(embedding[v])[1:-1]))

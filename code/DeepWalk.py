@@ -52,7 +52,7 @@ class RandomWalk:
     
     def sample(self, nodes=None):
         """Sample context edges."""
-        logger.info('Sampling context edges from the graph...')
+        logger.debug('Sampling context edges from the graph...')
 
         if nodes is None:
             nodes = self.G.nodes
@@ -60,15 +60,14 @@ class RandomWalk:
         edges = []
         walks = self.walk(nodes)
         for w in pbar(walks, total=len(nodes)):
-            for i in range(self.wl):
-                j1 = max(0, i - self.ws)
-                j2 = min(self.wl, i + self.ws + 1)
+            for i in range(self.ws, self.wl - self.ws):
+                j1, j2 = i - self.ws, i + self.ws + 1
                 for j in range(j1, j2):
                     # i: center node, j: context node
                     if i == j: continue
                     edges.append([w[i], w[j]])
 
-        logger.info('Sampled %d context edges.' % len(edges))
+        logger.debug('Sampled %d context edges.' % len(edges))
         return torch.tensor(edges, device=device)
     
     

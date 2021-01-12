@@ -12,11 +12,13 @@ logger = logging.getLogger('Graph')
 class Graph:
 
     def __init__(self, edges, labels=None, directed=False):
-        self.directed = directed
-        self.neighbors = {}  # dict of node context
+        self.neighbors = {}
+        self.weights = {}
         self.labels = labels
+        self.directed = directed
 
         encode = {}  # encode nodes from 0 to #nodes-1
+        self.decode = {}
 
         for edge in edges:
             try:
@@ -31,58 +33,54 @@ class Graph:
             for n in [u, v]:
                 if n not in encode:
                     i = encode[n] = len(encode)
-                    self.neighbors[i] = {}
+                    self.weights[i] = {}
+                    self.decode[i] = n
 
             i, j = encode[u], encode[v]
 
-            self.neighbors[i][j] = self.neighbors[i].get(j, 0) + w
+            self.weights[i][j] = self.weights[i].get(j, 0) + w
             if not self.directed:
-                self.neighbors[j][i] = self.neighbors[j].get(i, 0) + w
-
+                self.weights[j][i] = self.weights[j].get(i, 0) + w
+                
         self.num_nodes = len(encode)
         self.nodes = range(self.num_nodes)
-
-        self.num_edges = sum(len(nbs) for nbs in self.neighbors.values())
-        if not self.directed: self.num_edges //= 2
-
-        self.decode = {i: v for v, i in encode.items()}
+        
+        self.num_edges = 0
+        
+        for u in self.nodes:
+            nbs = tuple(self.weights[u])
+            self.neighbors[u] = nbs
+            self.num_edges += len(nbs)
+        
+        if not self.directed:
+            self.num_edges //= 2
 
         self._neg_sampler = None
 
         logger.debug(f"Constructed a{' directed' if directed else 'n undirected'}"
                      f" graph (V={self.num_nodes}, E={self.num_edges}).")
 
-    def __getitem__(self, idx):
-        try:
-            idx = int(idx)
-            return self.neighbors[idx]
-        except:
-            try:
-                i, j = idx
-                if j in self.neighbors[i]:
-                    return self.neighbors[i][j]
-                else:
-                    return 0
-            except:
-                raise TypeError('Invalid item type!')
+    def __getitem__(self, node):
+        u = int(node)
+        return self.neighbors[u]
             
     def __contains__(self, obj):
         try:
-            obj = int(obj)
-            return obj in self.nodes
+            u = int(obj)
+            return u in self.nodes
         except:
             try:
-                i, j = obj
-                return j in self[i]
+                u, v = obj
+                return v in self[u]
             except:
                 return False
 
     def weight(self, u, v=None):
         """The weight of a node or an edge, depending on the number of arguments."""
         if v is None:
-            return sum(self[u].values())
+            return sum(self.weights[u].values())
         else:
-            return self[u, v]
+            return self.weights[u][v]
         
     def sample_neighbors(self, node, k=1):
         """
@@ -95,11 +93,8 @@ class Graph:
         Returns:
             a random neighbor if k = 1; otherwise a list of sampled neighbors
         """
-        neighbors = list(self[node])
-        if k > len(neighbors):
-            return neighbors
-
-        sample = random.sample(neighbors, k)
+        neighbors = self[node]
+        sample = [random.choice(neighbors) for _ in range(k)]
         return sample[0] if k == 1 else sample
 
     def noise_sample(self):
@@ -107,17 +102,12 @@ class Graph:
             # init negative sampler
             node_weights = np.array([self.weight(u) for u in self.nodes], dtype=np.float)
             node_weights /= sum(node_weights)  # normalize
-            prob_dist = np.array([w ** 0.75 for w in node_weights])
-            self._neg_sampler = alias(prob_dist)
+            self._neg_sampler = alias(node_weights ** 0.75)
 
         return self._neg_sampler.draw()
 
-    def to_array(self):
-        return np.array([[self[i, j] for j in range(self.num_nodes)]
-                         for i in range(self.num_nodes)])
-        
 
-def read_graph(graph_file, labels_file=None, multi_labels=False, **graph_type):
+def read_graph(graph_file, labels_file=None, multi_labels=False, directed=False):
 
     def read_edge(line):
         return list(map(int, line.split()))
@@ -141,7 +131,7 @@ def read_graph(graph_file, labels_file=None, multi_labels=False, **graph_type):
     else:
         labels = None
         
-    graph = Graph(edges, labels, **graph_type)
+    graph = Graph(edges, labels, directed)
     
     t1 = time()
     logger.debug('Successfully read graph from "%s"%s (time: %dms).' % 

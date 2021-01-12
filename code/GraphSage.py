@@ -5,6 +5,7 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.functional import normalize
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from time import time
@@ -38,7 +39,7 @@ class NegSampling:
             return z[v] if v in z else self.Z[v]
 
         pos_lp = torch.sigmoid(Z(u) @ Z(v)).log()
-        neg_lp = 0.
+        neg_lp = torch.tensor(0.)
         for _ in range(self.K):
             vn = self.G.noise_sample()
             neg_lp += torch.sigmoid(-Z(u) @ Z(vn)).log()
@@ -51,10 +52,11 @@ class NegSampling:
 
 
 class GraphSage(nn.Module):
-    bs = 32                 # batch size
+    bs = 128                # batch size
     lr = config.ALPHA       # learning rate
     K = 2                   # maximum search depth, also number of layers
     S = [25, 10]            # neighborhood sample size for each search depth
+    aggregation = 'pool'    # aggregation of neighbors' information
 
     def __init__(self, graph: Graph, emb_dim=config.D, model_file=None, device=device):
         """
@@ -81,6 +83,13 @@ class GraphSage(nn.Module):
 
         self.loss = NegSampling(self.G, self.Z)
         self.opt = optim.Adam(self.W, lr=self.lr)
+        
+        if self.aggregation == 'mean':
+            self.aggregator = MeanAggregator()
+        elif self.aggregation == 'pool':
+            self.aggregator = PoolAggregator(self.D)
+        else:
+            raise NotImplementedError
 
         if model_file:
             try: self.load(model_file)
@@ -97,11 +106,10 @@ class GraphSage(nn.Module):
         # store the neighbor samples for duplication
         neighbor_sample = {}
 
-        # TODO: deal with features
-
         # collect all needed nodes for each layer
         B = [{int(v) for v in batch} for _ in range(self.K+1)]
         for k in range(self.K, 0, -1):
+            logger.debug('Sampling neighbors in layer %d', k)
             B[k-1].update(B[k])
             s = self.S[k-1]  # sample size
             for v in B[k]:
@@ -109,30 +117,32 @@ class GraphSage(nn.Module):
                     v, self.G.sample_neighbors(v, s))
                 B[k-1].update(neighbors)
 
-        # add neighbor nodes to the batch
-        batch = B[0]
-
+        # new embeddings
+        h = [{} for k in range(self.K+1)]
+        h[0].update((v, self.Z[v]) for v in B[0])
+        
         # aggregate information layer by layer
-        newZ = {v: self.Z[v] for v in batch}
         for k in range(1, self.K+1):
+            logger.debug('Aggregating context information in layer %d', k)
             for v in B[k]:
                 neighbors = neighbor_sample[v]
-                zn = self.aggregate([newZ[u] for u in neighbors])
-                z = self.sigma(self.W[k-1] @ torch.cat([newZ[v], zn]))
-                newZ[v] = z / torch.sqrt(torch.sum(z ** 2))
+                neighbors_info = [h[k-1][u] for u in neighbors]
+                ha = self.aggregator(neighbors_info)
+                hs = torch.sigmoid(self.W[k-1] @ torch.cat([h[k-1][v], ha]))
+                h[k][v] = normalize(hs, dim=0)
+                
+        # gather updated embeddings
+        newZ = h[1]
+        for k in range(2, self.K+1):
+            newZ.update(h[k])
 
-        for v in batch:
+        for v in newZ:
             self.Z[v] = newZ[v].detach()
 
+        logger.debug('Computing Loss...')
         return self.loss(batch, newZ)
 
-    def aggregate(self, neighbors):
-        return mean_aggregator(neighbors)
-
-    def sigma(self, x):
-        return torch.sigmoid(x)
-
-    def fit(self, epochs=100):
+    def fit(self, epochs=1000):
         nodes = torch.tensor(self.G.nodes, device=device)
         batches = DataLoader(nodes, batch_size=self.bs)
         losses = []
@@ -143,12 +153,14 @@ class GraphSage(nn.Module):
             start_time = time()
             epoch_loss = 0
 
-            for batch in batches:
+            for i, batch in enumerate(batches):
+                logger.debug('Batch %d', i)
                 loss = self.forward(batch)
                 loss.backward()
                 epoch_loss += loss
                 self.opt.step()
                 self.opt.zero_grad()
+                logger.debug('Epoch progress: %d%%\n', 100*(i//len(batches)))
 
             logger.info('Loss = %.3e' % epoch_loss)
             losses.append(epoch_loss)
@@ -182,21 +194,29 @@ class GraphSage(nn.Module):
 
 # GraphSage aggregators
 
-def mean_aggregator(h):
-    return sum(h) / len(h)
+class MeanAggregator:
+    def __call__(self, neighbors):
+        return sum(neighbors) / len(neighbors)
 
-def LSTM_aggregator(h):
-    pass
 
-def pool_aggregator(h):
-    pass
+class PoolAggregator:
+    def __init__(self, dim):
+        self.lin = nn.Linear(dim, dim)
+        
+    def __call__(self, neighbors):
+        h = torch.stack(neighbors)
+        return torch.max(torch.sigmoid(self.lin(h)), dim=0)[0] 
 
+
+# torch.autograd.set_detect_anomaly(True)
 
 if __name__ == "__main__":
     try:
         data_path = sys.argv[1]
     except IndexError:
         data_path = 'datasets/lesmis/lesmis.mtx'
+
+    data_path = 'datasets/blogcatalog/blogcatalogedge.txt'
 
     dataset = os.path.basename(data_path).split('.')[0]
     print('Dataset:', dataset, end='\n\n')
@@ -207,8 +227,7 @@ if __name__ == "__main__":
     print('Using device:', device)
 
     graph = read_graph(data_path)
-    # model = GraphSage(graph, model_file=model_file)
-    model = GraphSage(graph)
+    model = GraphSage(graph, model_file=model_file)
 
     try:
         losses = model.fit()
