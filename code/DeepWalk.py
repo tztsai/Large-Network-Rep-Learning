@@ -167,8 +167,7 @@ class DeepWalk(nn.Module):
 
     def save_embedding(self, path):
         logger.info(f'Saving embedding array to {path}')
-        Z = self.embedding()
-        np.savetxt(path, Z, header=str(Z.shape))
+        write_embedding(path, self.G, self.embedding())
         
     def similarity(self, u, v):
         Z = self.embedding()

@@ -10,7 +10,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from time import time
 from utils.graph import Graph, read_graph
-from utils.funcs import pbar, cos_similarity, init_param
+from utils.funcs import *
 from utils.visualize import plot_loss
 from DeepWalk import RandomWalk
 import config
@@ -184,8 +184,7 @@ class GraphSage(nn.Module):
 
     def save_embedding(self, path):
         logger.info(f'Saving embedding array to {path}')
-        emb = self.embedding()
-        np.savetxt(path, emb, header=str(emb.shape))
+        write_embedding(path, self.G, self.embedding())
 
     def similarity(self, u, v):
         Z = self.embedding()
