@@ -9,7 +9,7 @@ from config import WINDOW_SIZE, D
 # Parameters
 PARAMETER_w = 1 # window size
 
-NUM_WALKS = 10
+NUM_WALKS = 30
 WALK_LENGTH = 80
 P = 1
 Q = 1
@@ -53,7 +53,9 @@ class Node2vec():
         nodes = self.G.nodes
         for iter in range(num_walks):
             print('iteration ', iter+1, '/', num_walks, '...')
-            random.shuffle(nodes)
+            nodes = random.sample(self.G.nodes, self.G.num_nodes)
+            print(nodes)
+            quit()
             for node in nodes:
                 walk = self.node2vec_walk(node, walk_length)
                 walks.append(walk)
@@ -168,9 +170,10 @@ def decode_embeddings(graph: Graph, load_path, save_path):
 
 if __name__ == "__main__":
 
-    graph = read_graph('datasets/blogcatalog/blogcatalogedge.txt', directed=False)
+    graph = read_graph('../datasets/lesmis/lesmis.mtx', directed=False)
+    # print(graph.num_nodes)
     # n2v = Node2vec(graph, P, Q)
     # n2v.compute_transfer_prob()
 
-    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, 'models/node2vec_lesmix.embed')
-    decode_embeddings(graph, 'models/node2vec_blogcatalog.embed', 'models/node2vec_blogcatalog_sort.embed')
+    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, '../results/lesmis/lesmis_node2vec.txt')
+    decode_embeddings(graph, '../results/lesmis/lesmis_node2vec.txt', '../results/lesmis/lesmis_node2vec.txt')
