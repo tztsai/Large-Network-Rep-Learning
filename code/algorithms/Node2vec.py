@@ -1,13 +1,10 @@
-import sys 
-sys.path.append("..") 
-
 import numpy as np
 import random
 import math
 from utils.graph import Graph, read_graph
 import numpy.random as npr
 from gensim.models import Word2Vec
-from config.config import WINDOW_SIZE, D
+from config import WINDOW_SIZE, D
 
 # Parameters
 PARAMETER_w = 1 # window size
@@ -56,7 +53,9 @@ class Node2vec():
         nodes = self.G.nodes
         for iter in range(num_walks):
             print('iteration ', iter+1, '/', num_walks, '...')
-            random.shuffle(nodes)
+            nodes = random.sample(self.G.nodes, self.G.num_nodes)
+            print(nodes)
+            quit()
             for node in nodes:
                 walk = self.node2vec_walk(node, walk_length)
                 walks.append(walk)
@@ -171,10 +170,10 @@ def decode_embeddings(graph: Graph, load_path, save_path):
 
 if __name__ == "__main__":
 
-    graph = read_graph('../datasets/blogcatalog/blogcatalogedge.txt', directed=False)
-    print(graph.neighbors)
+    graph = read_graph('../datasets/lesmis/lesmis.mtx', directed=False)
+    # print(graph.num_nodes)
     # n2v = Node2vec(graph, P, Q)
     # n2v.compute_transfer_prob()
 
-    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, '../results/blogcatalog/blogcatalogedge.txt')
-    # decode_embeddings(graph, '../results/blogcatalog/blogcatalogedge.txt', '../results/blogcatalog/blogcatalogedge.txt')
+    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, '../results/lesmis/lesmis_node2vec.txt')
+    decode_embeddings(graph, '../results/lesmis/lesmis_node2vec.txt', '../results/lesmis/lesmis_node2vec.txt')
