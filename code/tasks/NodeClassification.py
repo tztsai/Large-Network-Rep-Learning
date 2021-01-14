@@ -54,6 +54,7 @@ class NodeClassification:
         clf = OneVsRestClassifier(LogisticRegression(random_state=SEED))
         cv = 5
         # report Micro-F1 and Macro-F1 scores
+        res = clf.fit(self.X, self.y)
         ma_scores = cross_val_score(clf, self.X, self.y, cv=cv, scoring='f1_macro')
         mi_scores = cross_val_score(clf, self.X, self.y, cv=cv, scoring='f1_micro')
         return np.mean(ma_scores), np.mean(mi_scores)
@@ -65,4 +66,3 @@ if __name__ == "__main__":
     print("Accurancy for node classification: ")
     print("Micro-F1 score: ", mi_score)
     print("Macro-F1 score: ", ma_score)
-
