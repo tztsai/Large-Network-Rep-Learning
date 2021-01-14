@@ -1,10 +1,13 @@
+import sys 
+sys.path.append("..") 
+
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.sparse as sp
 from random import sample
-from NetMF import NetMF
+from algorithms import NetMF
 from sklearn.metrics import roc_auc_score
 from utils.txtGraphReader import txtGreader 
 #from gae.preprocessing import mask_test_edges
@@ -21,9 +24,8 @@ DISTANCE_TYPE = 0 # 0 for common neighbors, 1 for Jaccard's coeff, 2 for AA, 3 f
 # GRAPH_PATH = "./test/blogcatalogedge.txt"
 # LABEL_PATH = "./test/blogcataloglabel.txt"
 
-EMBEDDING_PATH = "./test/NetMF_embedding_decoded.txt"
-GRAPH_PATH = "./test/NetMF_graph.txt"
-LABEL_PATH = "./test/NetMF_label.txt"
+EMBEDDING_PATH = "../results/lesmis/lesmis_NetMF.txt"
+GRAPH_PATH = "../datasets/lesmis/lesmis.mtx"
 
 
 class LinkPrediction():
@@ -33,7 +35,7 @@ class LinkPrediction():
         self.labels = None
         self.data_loader = None
 
-    def read_file(self, embedding_path, graph_path, label_path):
+    def read_file(self, embedding_path, graph_path):
         # read embedding
         self.embeddings = []
         with open(embedding_path, 'r') as f:
@@ -49,44 +51,27 @@ class LinkPrediction():
         self.graph = self.data_loader.graph
         self.graph = self.graph.to_undirected()
 
-        # read labels
-        self.labels = self.process_labels(label_path)
-        self.labels = np.array(sorted(self.labels, key=(lambda x:x[0]), reverse=False))
-
         # return value
-        return self.embeddings, self.graph, self.labels
+        return self.embeddings, self.graph
 
-    def process_labels(self, label_path):
-        all_labels = set()
-        # read label
-        y = []
-        name = []
-        with open(label_path, 'r') as f:
-            lines = f.readlines()
-            for i in range(len(lines)):
-                line = lines[i]
-                values = [int(x.strip()) for x in line.split()]
-                y.append(values[1:])
-                name.append(np.array([values[0]]))
-                for value in values[1:]:
-                    all_labels.add(value)
-            y = np.array(y)
-            name = np.array(name)
-
-        # tranform to boolean matrix
-        boolean_matrix = np.zeros((len(y),len(all_labels)))
-        for i in range(len(y)):
-            for value in y[i]:
-                boolean_matrix[i][value] = 1
-
-        # assemble
-        res = np.hstack((name, boolean_matrix))
-        return res
 
     def preprocess_graph(self, graph):
         # graph partition
         frac = FRACTION_REMOVE_EDGE 
         remove_size = int(frac * len(graph.edges))
+
+        negative_edges = []
+        for i in range(remove_size):
+            # sample negative edges according to weight
+            flag = True
+            while flag:
+                index1 = self.data_loader.node_sampling.draw()
+                index2 = self.data_loader.node_sampling.draw()
+                if index1 == index2:
+                    continue
+                flag = graph.has_edge(self.data_loader.nodedict[index1], self.data_loader.nodedict[index2])
+            negative_edges.append((self.data_loader.nodedict[index1], self.data_loader.nodedict[index2]))     
+
         removed_edges = []
         for i in range(remove_size):
             removed = False
@@ -99,15 +84,6 @@ class LinkPrediction():
                     removed_edges.append(cur_e)
                     removed = True
         # balance with negative edges
-        negative_edges = []
-        for i in range(remove_size):
-            # sample negative edges according to weight
-            flag = True
-            while flag:
-                index1 = self.data_loader.node_sampling.draw()
-                index2 = self.data_loader.node_sampling.draw()
-                flag = graph.has_edge(self.data_loader.nodedict[index1], self.data_loader.nodedict[index2])
-            negative_edges.append((self.data_loader.nodedict[index1], self.data_loader.nodedict[index2]))
         # assemble test split
         testsplit = []
         for item in removed_edges:
@@ -115,43 +91,7 @@ class LinkPrediction():
         for item in negative_edges:
             testsplit.append([item,-1])
         
-        return graph, testsplit
-
-    def cal_distance(self, graph):
-        print(graph.edges(data=True))
-        print(graph.nodes)
-        N = len(graph.nodes)
-        dist_mat = np.zeros((N, N))
-        for i in range(N):
-            for j in range(N):
-                n1 = list(graph.nodes)[i]
-                n2 = list(graph.nodes)[j]
-                if DISTANCE_TYPE == 0:
-                    dist_mat[i][j] = self.common_neighbors(graph, n1, n2)
-                elif DISTANCE_TYPE == 1:
-                    dist_mat[i][j] = self.jaccards_coefficient(graph, n1, n2)
-                elif DISTANCE_TYPE == 2:
-                    dist_mat[i][j] = self.adamic_adar_score(graph, n1, n2)
-                else:
-                    dist_mat[i][j] = self.preferential_attachment(graph, n1, n2)
-
-        # to find the index of max value in 2*2 mat
-        print(np.where(dist_mat==np.max(dist_mat)))
-
-        # determine how many edges to predict
-
-        # while loop
-
-        # argmax to find edge in the matrix, save edge and rank value
-
-        # set max to -inf
-
-
-
-
-    def get_ROC_AUC_score(self, y_true, y_score):
-        return roc_auc_score(y_true, y_score)
-
+        return graph, testsplit       
     def common_neighbors(self, graph, n1, n2):
         g1 = set()
         g2 = set()
@@ -235,10 +175,60 @@ class LinkPrediction():
 
         return len(g1) * len(g2)
 
+    def cal_distance(self, graph, testsplit, simi=0):
+        # with open(embed_path) as f:
+        #     lines = [line[:-1] for line in f.readlines()]
+
+        # for line in lines:
+        #     no, embeddings = line.split(' ', 1)
+        #     no_embed[no] = embeddings
+
+        ranked_dict = {}
+        for edge, b in testsplit:
+            # ('49', '63') 1
+            #  element dict :key list['node1', 'node2', pos/neg]: similarity
+            for edge, b in testsplit:
+                if simi == 0:
+                    dist = self.common_neighbors(graph, edge[0], edge[1])
+                elif simi == 1:
+                    dist = self.jaccards_coefficient(graph, edge[0], edge[1])
+                elif  simi == 2:
+                    dist = self.adamic_adar_score(graph, edge[0], edge[1])
+                else:
+                    dist = self.preferential_attachment(graph, edge[0], edge[1])
+
+                ranked_dict[(edge[0], edge[1], b)] = dist
+        ranked_dict = dict(sorted(ranked_dict.items(), key=lambda rank_dict: rank_dict[1], reverse=True))
+        
+        acc = self.get_acc_posedge(ranked_dict)
+        print(acc)
+
+
+    def get_acc_posedge(self, ranked_dict):
+        print(ranked_dict)
+
+        true_edge = 0
+        num_pos_edge = int(len(ranked_dict) / 2)
+        print(num_pos_edge)
+        for cnt, edge in enumerate(ranked_dict.keys()):
+            print(cnt, edge)
+            if cnt == num_pos_edge:
+                print(true_edge, num_pos_edge)
+                return true_edge / num_pos_edge
+            if edge[2] == 1:
+                true_edge += 1
+    
+    def get_ROC_AUC_score(self, y_true, y_score):
+        return roc_auc_score(y_true, y_score)
+
+            
+            
+        
+
 
 if __name__ == "__main__":
     lp = LinkPrediction()
-    e, g, l = lp.read_file(EMBEDDING_PATH, GRAPH_PATH, LABEL_PATH)
+    e, g = lp.read_file(EMBEDDING_PATH, GRAPH_PATH)
     g, testsplit = lp.preprocess_graph(g)
-    dist = lp.cal_distance(g)
+    lp.cal_distance(g, testsplit)
     # lp.get_ROC_AUC_score()
