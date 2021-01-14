@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.sparse as sp
 from random import sample
-from algorithms import NetMF
+# from algorithms import NetMF
 from sklearn.metrics import roc_auc_score
-from utils.txtGraphReader import txtGreader 
+from algorithms.utils.txtGraphReader import txtGreader 
 #from gae.preprocessing import mask_test_edges
 
 # Global                                                                          
@@ -24,7 +24,7 @@ DISTANCE_TYPE = 0 # 0 for common neighbors, 1 for Jaccard's coeff, 2 for AA, 3 f
 # GRAPH_PATH = "./test/blogcatalogedge.txt"
 # LABEL_PATH = "./test/blogcataloglabel.txt"
 
-EMBEDDING_PATH = "../results/lesmis/lesmis_NetMF.txt"
+EMBEDDING_PATH = "../results/lesmis/lesmis_node2vec.txt"
 GRAPH_PATH = "../datasets/lesmis/lesmis.mtx"
 
 
@@ -57,9 +57,8 @@ class LinkPrediction():
 
     def preprocess_graph(self, graph):
         # graph partition
-        frac = FRACTION_REMOVE_EDGE 
+        frac = FRACTION_REMOVE_EDGE
         remove_size = int(frac * len(graph.edges))
-
         negative_edges = []
         for i in range(remove_size):
             # sample negative edges according to weight
