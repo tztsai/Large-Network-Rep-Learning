@@ -1,7 +1,7 @@
 import torch
 
 # graph embedding
-D = 8                   # dimension of embedding space
+D = 128                 # dimension of embedding space
 
 # model training
 ALPHA = 1e-3            # learning rate

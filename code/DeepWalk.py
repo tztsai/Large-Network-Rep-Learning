@@ -189,7 +189,7 @@ if __name__ == "__main__":
     print('Using device:', device)
 
     graph = read_graph(data_path)
-    model = DeepWalk(graph)
+    model = DeepWalk(graph, model_file=model_file)
     
     try:
         model.fit()
