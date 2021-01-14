@@ -6,12 +6,13 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.sparse as sp
-from random import sample
+import random
 # from algorithms import NetMF
 from sklearn.metrics import roc_auc_score
 from algorithms.utils.txtGraphReader import txtGreader 
 #from gae.preprocessing import mask_test_edges
 
+random.seed(1)
 # Global                                                                          
 FRACTION_REMOVE_EDGE = 0.5
 K_TRAINING = 2 # 
@@ -76,7 +77,7 @@ class LinkPrediction():
             removed = False
             # remove edge
             while removed == False:
-                cur_e = sample(list(graph.edges), 1)[0]
+                cur_e = random.sample(list(graph.edges), 1)[0]
                 # check if isolated
                 if graph.degree[cur_e[0]] != 1 and graph.degree[cur_e[1]] != 1:
                     graph.remove_edge(cur_e[0], cur_e[1]) # update dataloader, data_loader.graph_update(graph)
@@ -223,7 +224,13 @@ class LinkPrediction():
             if edge[2] == 1:
                 true_edge += 1
     
-
+    def prt_graph(self, graph, save_path):
+            
+            self.data_loader.graph_update(graph)
+            with open(save_path, 'w') as f:
+                for item in self.data_loader.edgewithweight:
+                    f.write(item[0] + ' ' + item[1] + ' ' + str(int(item[2]['weight'])) + '\n')
+            # print(self.data_loader.edgewithweight)
 
             
             
@@ -234,5 +241,7 @@ if __name__ == "__main__":
     lp = LinkPrediction()
     e, g = lp.read_file(EMBEDDING_PATH, GRAPH_PATH)
     g, testsplit = lp.preprocess_graph(g)
-    lp.evaluate(g, testsplit, 1)
+    lp.prt_graph(g,'g.txt')
+    r = lp.evaluate(g, testsplit, 1)
+    print(r)
     # lp.get_ROC_AUC_score()
