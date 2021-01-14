@@ -2,9 +2,6 @@ import random
 import logging
 import sys
 import os
-
-os.chdir('..')
-
 import numpy as np
 import torch
 import torch.nn as nn

@@ -2,10 +2,6 @@ import random
 import logging
 import sys
 import os
-
-os.chdir('..')
-print(os.getcwd())
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -177,7 +173,7 @@ class DeepWalk(nn.Module):
         Z = self.embedding()
         return cos_similarity(Z[u], Z[v])
     
-        
+
 if __name__ == "__main__":
     try:
         data_path = sys.argv[1]
@@ -187,7 +183,7 @@ if __name__ == "__main__":
     dataset = os.path.basename(data_path).split('.')[0]
     print('Dataset:', dataset, end='\n\n')
     
-    model_file = f'models/{dataset}/{dataset}_deepwalk.pt'
+    model_file = f'models/{dataset}_deepwalk.pt'
     emb_file = f'results/{dataset}/{dataset}_deepwalk.txt'
 
     print('Using device:', device)
