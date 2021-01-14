@@ -1,11 +1,8 @@
-import torch
-
 # graph embedding
 D = 128                 # dimension of embedding space
 
 # model training
 ALPHA = 1e-3            # learning rate
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # random walk
 WINDOW_SIZE = 4         # window size for word2vec

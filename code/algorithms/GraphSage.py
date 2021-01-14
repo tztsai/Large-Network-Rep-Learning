@@ -16,7 +16,7 @@ from DeepWalk import RandomWalk
 import config
 
 logger = logging.getLogger('GraphSage')
-device = config.DEVICE
+device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
 # torch.autograd.set_detect_anomaly(True)
 
 
