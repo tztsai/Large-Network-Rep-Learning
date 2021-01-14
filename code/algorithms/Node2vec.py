@@ -1,15 +1,18 @@
+import sys 
+sys.path.append("..") 
+
 import numpy as np
 import random
 import math
 from utils.graph import Graph, read_graph
 import numpy.random as npr
 from gensim.models import Word2Vec
-from config import WINDOW_SIZE, D
+from config.config import WINDOW_SIZE, D
 
 # Parameters
 PARAMETER_w = 1 # window size
 
-NUM_WALKS = 10
+NUM_WALKS = 30
 WALK_LENGTH = 80
 P = 1
 Q = 1
@@ -167,9 +170,10 @@ def decode_embeddings(graph: Graph, load_path, save_path):
 
 if __name__ == "__main__":
 
-    graph = read_graph('datasets/blogcatalog/blogcatalogedge.txt', directed=False)
+    graph = read_graph('../datasets/blogcatalog/blogcatalogedge.txt', directed=False)
+    print(graph.neighbors)
     # n2v = Node2vec(graph, P, Q)
     # n2v.compute_transfer_prob()
 
-    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, 'models/node2vec_lesmix.embed')
-    decode_embeddings(graph, 'models/node2vec_blogcatalog.embed', 'models/node2vec_blogcatalog_sort.embed')
+    # n2v.learn_features(128, 10, NUM_WALKS, WALK_LENGTH, '../results/blogcatalog/blogcatalogedge.txt')
+    # decode_embeddings(graph, '../results/blogcatalog/blogcatalogedge.txt', '../results/blogcatalog/blogcatalogedge.txt')
