@@ -160,7 +160,7 @@ class GraphSage(nn.Module):
                 epoch_loss += loss
                 self.opt.step()
                 self.opt.zero_grad()
-                logger.debug('Epoch progress: %d%%\n', 100*(i//len(batches)))
+                logger.debug('Epoch progress: %d%%\n', int(100*i/len(batches)))
 
             logger.info('Loss = %.3e' % epoch_loss)
             losses.append(epoch_loss)
@@ -213,7 +213,7 @@ if __name__ == "__main__":
     except IndexError:
         data_path = 'datasets/example.txt'
 
-    dataset = os.path.basename(data_path).split('.')[0]
+    dataset = data_path.split('/')[-2]
     print('Dataset:', dataset, end='\n\n')
 
     model_file = f'models/{dataset}_graphsage.pt'
