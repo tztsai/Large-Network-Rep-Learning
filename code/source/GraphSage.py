@@ -54,7 +54,7 @@ class GraphSage(nn.Module):
     lr = config.ALPHA       # learning rate
     K = 2                   # maximum search depth, also number of layers
     S = [25, 10]            # neighborhood sample size for each search depth
-    aggregation = 'mean'    # aggregation of neighbors' information
+    aggregation = 'pool'    # aggregation of neighbors' information
 
     def __init__(self, graph: Graph, emb_dim=config.D, model_file=None, device=device):
         """
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     dataset = os.path.basename(data_path).split('.')[0]
     print('Dataset:', dataset, end='\n\n')
 
-    model_file = f'models/{dataset}/{dataset}_graphsage.pt'
+    model_file = f'models/{dataset}_graphsage.pt'
     emb_file = f'results/{dataset}/{dataset}_graphsage.txt'
 
     print('Using device:', device)
