@@ -180,7 +180,7 @@ if __name__ == "__main__":
     except IndexError:
         data_path = 'datasets/example.txt'
 
-    dataset = os.path.basename(data_path).split('.')[0]
+    dataset = data_path.split('/')[-2]
     print('Dataset:', dataset, end='\n\n')
     
     model_file = f'models/{dataset}_deepwalk.pt'

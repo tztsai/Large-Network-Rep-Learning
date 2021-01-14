@@ -27,15 +27,16 @@ class Node2vec():
     def compute_transfer_prob(self):
         # transfer_prob_nodes[t][v]
         self.transfer_prob_nodes = [] # transfer probability given a previous node
-        for node in self.G.neighbors.keys():
+        for node in self.G.nodes:
             m = [ ]
-            for neighbor in self.G[node].keys():
-                k = [ ]
-                for next_neighbor, weight in self.G[neighbor].items():
+            for neighbor in self.G[node]:
+                k = []
+                for next_neighbor in self.G[neighbor]:
                     # compute probability for each edge 
+                    weight = self.G.weight(next_neighbor)
                     if next_neighbor == node:
                         k.append(weight * (1/self.p))
-                    elif next_neighbor in self.G[node].keys():
+                    elif next_neighbor in self.G[node]:
                         k.append(weight * 1)
                     else:
                         k.append(weight * (1/self.q)) # transfer prob for 2 hop nodes
@@ -49,7 +50,7 @@ class Node2vec():
 
     def learn_features(self, d, ws, num_walks, walk_length, save_path):
         walks = []
-        nodes = list(self.G.neighbors.keys())
+        nodes = self.G.nodes
         for iter in range(num_walks):
             print('iteration ', iter+1, '/', num_walks, '...')
             random.shuffle(nodes)

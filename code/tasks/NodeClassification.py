@@ -9,8 +9,8 @@ SEED = 0
 # EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
 # EMBEDDING_PATH = "./test/node2vec_blogcatalog_sort.embed"
 # EMBEDDING_PATH = "./test/Line1embd_second-order.txt"
-EMBEDDING_PATH = "results/blogcatalogedge_deepwalk.txt"
-LABEL_PATH = "test/blogcataloglabel.txt"
+EMBEDDING_PATH = "results/blogcatalog/blogcatalog_graphsage.txt"
+LABEL_PATH = "datasets/blogcatalog/blogcataloglabel.txt"
 
 class NodeClassification:
     def __init__(self, embedding_path, labels_path):
@@ -31,7 +31,7 @@ class NodeClassification:
         nodes = []
         all_labels = set()
         
-        # read label
+        # read labels
         with open(path, 'r') as f:
             lines = f.readlines()
             for line in lines:
@@ -39,7 +39,7 @@ class NodeClassification:
                 x, *y = values
                 nodes.append(x)
                 labels.append(y)
-                all_labels.update(labels)
+                all_labels.update(y)
 
         # tranform to boolean matrix
         boolean_matrix = np.zeros((len(nodes), len(all_labels)), dtype=np.int)

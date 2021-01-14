@@ -5,6 +5,7 @@ import logging
 import numpy as np
 from time import time
 from .sampling import alias
+from .funcs import timer
 
 logger = logging.getLogger('Graph')
 
@@ -133,10 +134,8 @@ def read_graph(graph_file, labels_file=None, multi_labels=False, directed=False)
         
     graph = Graph(edges, labels, directed)
     
-    t1 = time()
-    logger.debug('Successfully read graph from "%s"%s (time: %dms).' % 
-                 (graph_file, f' and labels from "{labels_file}"' if labels_file else '',
-                  (t1 - t0) * 1000))
+    logger.debug('Successfully read graph from "%s"%s.' % 
+                 (graph_file, f' and labels from "{labels_file}"' if labels_file else ''))
     return graph
 
 
