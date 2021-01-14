@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from time import time
 from utils.graph import Graph, read_graph
 from utils.huffman import HuffmanTree
-from utils.funcs import pbar, timer, cos_similarity, init_param
+from utils.funcs import *
 import config
 
 logger = logging.getLogger('DeepWalk')

@@ -16,10 +16,8 @@ from DeepWalk import RandomWalk
 import config
 
 logger = logging.getLogger('GraphSage')
-# dw_logger = logging.getLogger('DeepWalk')
-# dw_logger.setLevel(logging.WARNING)
-
 device = config.DEVICE
+# torch.autograd.set_detect_anomaly(True)
 
 
 class NegSampling:
@@ -56,7 +54,7 @@ class GraphSage(nn.Module):
     lr = config.ALPHA       # learning rate
     K = 2                   # maximum search depth, also number of layers
     S = [25, 10]            # neighborhood sample size for each search depth
-    aggregation = 'pool'    # aggregation of neighbors' information
+    aggregation = 'mean'    # aggregation of neighbors' information
 
     def __init__(self, graph: Graph, emb_dim=config.D, model_file=None, device=device):
         """
@@ -95,6 +93,7 @@ class GraphSage(nn.Module):
             try: self.load(model_file)
             except FileNotFoundError: pass
 
+    @timer
     def forward(self, batch):
         """
         Forward propagation of the neural network.
@@ -142,6 +141,7 @@ class GraphSage(nn.Module):
         logger.debug('Computing Loss...')
         return self.loss(batch, newZ)
 
+    @timer
     def fit(self, epochs=1000):
         nodes = torch.tensor(self.G.nodes, device=device)
         batches = DataLoader(nodes, batch_size=self.bs)
@@ -206,8 +206,6 @@ class PoolAggregator:
         h = torch.stack(neighbors)
         return torch.max(torch.sigmoid(self.lin(h)), dim=0)[0] 
 
-
-# torch.autograd.set_detect_anomaly(True)
 
 if __name__ == "__main__":
     try:

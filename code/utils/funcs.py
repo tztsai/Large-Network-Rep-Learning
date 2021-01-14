@@ -3,25 +3,12 @@ from time import time
 import numpy as np
 import torch
 from tqdm import tqdm
-import multiprocessing as mp
 from functools import wraps
 
 
 def pbar(iterable, **kwds):
     """Process bar visualization."""
     return tqdm(iterable, bar_format='\t{l_bar}{bar:20}{r_bar}', **kwds)
-
-
-def pmap(func, iterable):
-    """Parallely map a function to a sequence."""
-    with mp.Pool(mp.cpu_count()) as pool:
-        return pool.map(func, iterable)
-
-
-def split_array(a: np.ndarray, m):
-    """Evenly split an array into m parts."""
-    l = len(a) // m
-    return [a[i*l : (i+1)*l] for i in range(m)]
 
 
 def cos_similarity(x, y):
@@ -59,6 +46,4 @@ def timer(f):
 def write_embedding(filename, graph, embedding):
     with open(filename, 'w') as f:
         for v in graph.nodes:
-            f.write('%d %s\n' %
-                    (graph.decode[v],
-                     str(embedding[v])[1:-1]))
+            f.write(f"{graph.decode[v]} {' '.join(map(str, embedding[v]))}\n")

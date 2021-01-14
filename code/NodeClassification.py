@@ -8,8 +8,9 @@ SEED = 0
 # EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding_decoded.txt"
 # EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
 # EMBEDDING_PATH = "./test/node2vec_blogcatalog_sort.embed"
-EMBEDDING_PATH = "./test/Line1embd_second-order.txt"
-LABEL_PATH = "./test/blogcataloglabel.txt"
+# EMBEDDING_PATH = "./test/Line1embd_second-order.txt"
+EMBEDDING_PATH = "results/blogcatalogedge_graphsage.txt"
+LABEL_PATH = "test/blogcataloglabel.txt"
 
 class NodeClassification():
     def __init__(self):
