@@ -27,7 +27,7 @@ class NodeClassification:
         return Z
     
     def read_labels(self, path):
-        y = []
+        labels = []
         nodes = []
         all_labels = set()
         
@@ -36,15 +36,15 @@ class NodeClassification:
             lines = f.readlines()
             for line in lines:
                 values = list(map(int, line.split()))
-                node, *labels = values
-                nodes.append(node)
-                y.append(labels)
+                x, *y = values
+                nodes.append(x)
+                labels.append(y)
                 all_labels.update(labels)
 
         # tranform to boolean matrix
         boolean_matrix = np.zeros((len(nodes), len(all_labels)), dtype=np.int)
-        for node, labels in zip(nodes, labels):
-            boolean_matrix[node][labels] = 1
+        for x, y in zip(nodes, labels):
+            boolean_matrix[x, y] = 1
 
         print('Successfully read labels from', path)
         return boolean_matrix
