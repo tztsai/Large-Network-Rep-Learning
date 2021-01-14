@@ -75,14 +75,14 @@ class Node2vec():
         while len(walk) < walk_length:
             current_node = walk[-1]
             if len(walk) == 1:
-                next_node_index = random.randrange(0, len(self.G[start_node]))
+                next_node = random.choice(self.G[start_node])
             else:
                 prev_node = walk[-2]
                 # print('pre, cur : ', prev_node, current_node)
-                current_nodex_index = list(self.G[prev_node].keys()).index(current_node)
+                current_nodex_index = self.G[prev_node].index(current_node)
                 next_node_index = alias_draw(*self.transfer_prob_nodes[prev_node][current_nodex_index])
+                next_node = self.G[current_node][next_node_index]
             
-            next_node = list(self.G[current_node].keys())[next_node_index]
             walk.append(next_node)
         
        
