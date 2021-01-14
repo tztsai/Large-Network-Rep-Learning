@@ -1,6 +1,8 @@
 import random
 import numpy as np
 
+random.seed(1)
+
 
 class alias:
     def __init__(self, problist):

@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-from utils.sampling import alias
+from .sampling import alias
 
 class txtGreader:
     def __init__(self, filename, direct = False, weighted = False):
