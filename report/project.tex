@@ -71,20 +71,20 @@ DD2434
 
 
 
-\noindent In this project we reproduce the results of the article “A Comparative Study for Unsupervised Network Representation Learning \cite{1}” according to the requirements of the assignment. The original article conducted a large-scale study on multiple unsupervised network representation learning algorithms, and made a systematic comparison on their performance in different tasks. We implemented five methods mentioned in the article: DeepWalk, Node2vec, Line, NetMF and GraphSage, and apply them to two tasks: node classification and link prediction, evaluating on different datasets. Based on our results, we verify and further explore the research results of the article.
+\noindent In this project we reproduce the results of the article “A Comparative Study for Unsupervised Network Representation Learning \cite{a}” according to the requirements of the assignment. The original article conducted a large-scale study on multiple unsupervised network representation learning algorithms, and made a systematic comparison on their performance in different tasks. We implemented five methods mentioned in the article: DeepWalk, Node2vec, Line, NetMF and GraphSage, and apply them to two tasks: node classification and link prediction, evaluating on different datasets. Based on our results, we verify and further explore the research results of the article.
 
 
 \subsection{Study Background}
 
 % framework
 
-\noindent To understand how various methods differ in definitions and treatment of similarity, we introduce the concept of context graph. A context graph is defined as a graph with the weight of edge (u,v) denote the similarity between u and v, where negative weight means dissimilarity between the two nodes. And the representation of a node is divided into “source” and “context”. The source role of node v is obtained by the observable edges, and the context of v is its “one-hop neighbor” \cite{1}. We would like to use different methods to learn and analyze the source and context representation of nodes.
+\noindent To understand how various methods differ in definitions and treatment of similarity, we introduce the concept of context graph. A context graph is defined as a graph with the weight of edge (u,v) denote the similarity between u and v, where negative weight means dissimilarity between the two nodes. And the representation of a node is divided into “source” and “context”. The source role of node v is obtained by the observable edges, and the context of v is its “one-hop neighbor” \cite{a}. We would like to use different methods to learn and analyze the source and context representation of nodes.
 
 
 \subsection{Research Questions} 
 
 
-\noindent In our experiment, we hope to answer the following research questions. These questions are adapted from that asked in the original paper \citehere.
+\noindent In our experiment, we hope to answer the following research questions. These questions are adapted from that asked in the original paper \cite{a}.
 
 \begin{enumerate}[1.]
 
@@ -101,23 +101,9 @@ DD2434
 \section{Procedure}
 % How we conduct the experiment, step by step
 
-\noindent The procedure of our experiment are as follows, according to the requirements of the project assignment.
-
-\begin{enumerate}[1.]
-
-\item Implement five methods discussed in the paper: DeepWalk, Node2vec, Line-1, NetMF, and GraphSage. 
-
-\item Collect all the datasets presented in the paper and a few additional datasets.
-
-\item Evaluate the different methods on the data we collected with respect to the tasks of link prediction and node classification.
-
-\item Discuss our findings and give answer to the research questions we posted based on our results.
-
-\item Compare our results to the results of the paper, and discuss the reproducibility of the study.
-
-\item Discuss the original paper in terms of approach, methodology, and conclusions.
-
-\end{enumerate}
+\noindent The procedure of our experiment are as follows, according to the requirements of the project assignment. \\\\
+\noindent In the experimental part, implement the five methods discussed in the paper: DeepWalk, Node2vec, Line-1, NetMF, and GraphSage. Then, we collect all the datasets presented in the paper and a few additional datasets. Based on these datasets, we evaluate the different methods on the data we collected with respect to the tasks of link prediction and node classification. \\\\
+\noindent In the discussion part, we discuss our findings and give answer to the research questions we posted based on our results; compare our results to the results of the paper, and discuss the reproducibility of the study; and discuss the original paper in terms of approach, methodology, and conclusions.
 
 
 \section{Methods}
@@ -156,30 +142,30 @@ GraphSage&  \tabincell{c}{Random Walk} & Source&\tabincell{c}{Neighborhood Aggre
 
 \subsubsection{Random Walk Based Methods} %deepwalk, node2vec
 
-\noindent \textbf{DeepWalk} utilizes random walk to sample a sequence of graph nodes where for each node, its successive node is randomly selected from its neighbors. After the random walk sequence is sampled, a window of a certain width slides through it and at each position, the node at the window center forms a \emph{context edge} with each of the rest nodes in the window. For these context edges $C$, we want to find the graph embeddings $\Phi$ and $\theta$ such that the loss 
+\noindent \textbf{DeepWalk} utilizes random walk to sample a sequence of graph nodes where for each node, its successive node is randomly selected from its neighbors. After the random walk sequence is sampled, a window of a certain width slides through it and at each position, the node at the window center forms a \emph{context edge} with each of the rest nodes in the window. For these context edges $C$, we want to find the graph embedding $\Phi$ and $\theta$ such that the loss 
 $$
 -\sum_{(u,v)\in C}\log P(v\mid u)=-\sum_{(u,v)\in C}\log\frac{\exp(\Phi_u\cdot \theta_v)}{\sum_{w\in V}{\exp(\Phi_u\cdot \theta_w)}},
 $$
-is minimized, which is equivalent to maximizing the likelihood of the co-occurrence of nodes in the same context. However, note that in the denominator there is a sum over all nodes in the graph, which makes the objective function computationally very expensive. To deal with this, two methods have been proposed: hierarchical SoftMax and negative sampling. In the original paper, DeepWalk adopts hierarchical SoftMax, which constructs a Huffman binary tree in which each graph node is a leaf \citehere{}. In this manner, the log probability is approximated by traversing the tree bottom up, thus reducing the time complexity to $O(\log V)$. After the loss is obtained, we use back-propagation and gradient descent to optimize the graph embeddings. \\  
+is minimized, which is equivalent to maximizing the likelihood of the co-occurrence of nodes in the same context. However, note that in the denominator there is a sum over all nodes in the graph, which makes the objective function computationally very expensive. To deal with this, two methods have been proposed: hierarchical SoftMax and negative sampling. In the original paper, DeepWalk adopts hierarchical SoftMax, which constructs a Huffman binary tree in which each graph node is a leaf \cite{b}. In this manner, the log probability is approximated by traversing the tree bottom up, thus reducing the time complexity to $O(\log V)$. After the loss is obtained, we use back-propagation and gradient descent to optimize the graph embedding. \\  
 
-\noindent \textbf{Node2Vec} The major difference between DeepWalk and Node2Vec is the probability distribution of the neighborhood selection. For DeepWalk, the distribution is uniform - each neighbor is equally likely to be selected. For Node2Vec, the distribution of neighbors is dependent on the list of nodes in the random walk - more specifically, dependent on the node preceding the current node in the walk, which is called the second-order neighborhood \citehere{}. Intuitively, the probability distribution of the second-order neighborhood in Node2Vec is controlled by 2 parameters $p$ and $q$ - they control the probabilities of the next node coming back or walking away from the previous one respectively. Hence, Node2Vec is actually a generalization of DeepWalk. When $p = q = 1$, the neighborhood distribution in Node2Vec is unbiased and thus the same as that in DeepWalk.
+\noindent \textbf{Node2Vec} The major difference between DeepWalk and Node2Vec is the probability distribution of the neighborhood selection. For DeepWalk, the distribution is uniform - each neighbor is equally likely to be selected. For Node2Vec, the distribution of neighbors is dependent on the list of nodes in the random walk - more specifically, dependent on the node preceding the current node in the walk, which is called the second-order neighborhood \cite{f}. Intuitively, the probability distribution of the second-order neighborhood in Node2Vec is controlled by 2 parameters $p$ and $q$ - they control the probabilities of the next node coming back or walking away from the previous one respectively. Hence, Node2Vec is actually a generalization of DeepWalk. When $p = q = 1$, the neighborhood distribution in Node2Vec is unbiased and thus the same as that in DeepWalk.
 
 \subsubsection{Adjacency Based Methods} % Line, GraphSAGE
 
-\noindent \textbf{LINE} \citehere aims to preserve both local and global network structures in embedding. "First order proximity" is captured by observable links between vertic es. And "Second order proximity" is determined through the neighbors shared between vertices. LINE-1 optimizes the "First order proximity", which preserves the local network structure, and LINE-2 deal with the "Second order proximity" and global structure. The optimization is done by stochastic gradient descent. To improve the efficiency and to avoid a huge weight multiplying to the gradients, LINE samples the edges with probability proportional to their weights.
+\noindent \textbf{LINE} \cite{d} aims to preserve both local and global network structures in embedding. "First order proximity" is captured by observable links between vertic es. And "Second order proximity" is determined through the neighbors shared between vertices. LINE-1 optimizes the "First order proximity", which preserves the local network structure, and LINE-2 deal with the "Second order proximity" and global structure. The optimization is done by stochastic gradient descent. To improve the efficiency and to avoid a huge weight multiplying to the gradients, LINE samples the edges with probability proportional to their weights.
 
 
 \subsubsection{Matrix Factorization Based Methods} % NetMF
 
 
-\noindent \textbf{NetMF} This method unified LINE, PTE, DeepWalk and Node2vec in the framewalk of matrix factorization. It directly factorizes the context matrix with $(i,j)$th element given by \citehere:
+\noindent \textbf{NetMF} This method unified LINE, PTE, DeepWalk and Node2vec in the framewalk of matrix factorization. It directly factorizes the context matrix with $(i,j)$th element given by \cite{e}:
 $$
 c_{i,j} = log(\frac{vol(G)}{kT}(\frac{1}{d_j} \cdot (\sum\limits_{r=1}^T P^r)_{i,j}))
 $$
 \noindent where $T$ is the window size, $r$ is the walk length and $k$ is the number of negative samples in DeepWalk. For small window size $T$, we first compute the DeepWalk matrix $M$, and then factorize (perform SVD) to get the network embedding. For large window size $T$, it is not feasible to directly compute the DeepWalk matrix $M$ as the time complexity can be too high. A solution to this is to approximate the DeepWalk matrix $M$ and show its low-rank nature by using the relationship of  $M$ with the normalized graph Laplacian.
 
 \subsubsection{Neural Network Based Methods} % GraphSage
-GraphSage is a framework of graph neural network that leverages neighborhood aggregation to inductively learn the topological structure of each node's neighborhood and incorporate them into the node embeddings. A variety of \emph{aggregator functions} can be used in the GraphSage framework. The simplest one is the \textit{mean} function, which aggregates the neighborhood information by taking the mean of the embedding of each neighbor. 
+\noindent \textbf{GraphSage} is a framework of graph neural network that leverages neighborhood aggregation to inductively learn the topological structure of each node's neighborhood and incorporate them into the node embeddings. A variety of \emph{aggregator functions} can be used in the GraphSage framework. The simplest one is the \textit{mean} function, which aggregates the neighborhood information by taking the mean of the embedding of each neighbor. Other more advanced aggregators include LSTM (long-short term memory) and MaxPooling (which utilizes another single-layer neural network). For each node, the neighborhood aggregation starts from its $K$th-order neighborhood and propagates layer by layer until the information is aggregated from its immediate neighbors. Thus $K$ is the number of layers in the neural network. After that the embedding of the node is updated as the aggregated information, and then the loss of the embeddings of nodes in a minibatch is calculated by using random walk and negative sampling. After optimizing node embeddings, they should properly represent the topological structure of the graph.
 
 \subsection{Task Description}
 
@@ -187,7 +173,7 @@ GraphSage is a framework of graph neural network that leverages neighborhood agg
 
 \subsubsection{Link Prediction (LP)}
 
-\noindent The first task is to predict missing edges of a network. In the original paper describing the experiments of Link Prediction \citehere, the author work with the subgraphs of a social network $G$ with potentially different time-stamps. In this article \citehere, we instead evaluate a network with a fraction of removed edges (no vertex is isolated due to the removal). The residual network is used for training, and the removed edges are served as the test split. Also, we sample negative edges to balance the test split. In the training process, we measure the distance (similarity) between pair of vertices using four different methods: common neighbors, Jaccard's coefficient, Adamic/Adar and preferential attachment. Then we rank the node-to-node similarity and predict links according to the rank. To obtain the accuracy of the prediction, we test our prediction on the test split and calculate the ROC-AUC (Area Under the Receiver Operating Characteristic Curve) scores.
+\noindent The first task is to predict missing edges of a network. In the original paper describing the experiments of Link Prediction \cite{g}, the author work with the subgraphs of a social network $G$ with potentially different time-stamps. In this article \cite{a}, we instead evaluate a network with a fraction of removed edges (no vertex is isolated due to the removal). The residual network is used for training, and the removed edges are served as the test split. Also, we sample negative edges to balance the test split. In the training process, we measure the distance (similarity) between pair of vertices using four different methods: common neighbors, Jaccard's coefficient, Adamic/Adar and preferential attachment. Then we rank the node-to-node similarity and predict links according to the rank. To obtain the accuracy of the prediction, we test our prediction on the test split and calculate the ROC-AUC (Area Under the Receiver Operating Characteristic Curve) scores.
 
 \subsubsection{Multilabel Node Classification (NC)}
 
@@ -236,8 +222,7 @@ Number of Eigenpairs h & 256& NODE2VEC p,q& 0.25,4\\
 \noindent The iteration number for LINE is reduced from 10 billion to 300000, mainly because it is too time-consuming and we cannot get a result in time by our hardware.
 
 
-
-\subsection{Hardware and Software}
+% \subsection{Hardware and Software}
 
 \section{Results}
 
@@ -270,11 +255,11 @@ Number of Eigenpairs h & 256& NODE2VEC p,q& 0.25,4\\
 \hline
 method & BlogCatalog & Cora & PubMed & Lesmis & Facebook\\
 \hline
-DeepWalk& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
-Node2vec& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
-LINE-1& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
-NetMF& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
-GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
+DeepWalk& \textcolor{red}{0.433}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
+Node2vec& \textcolor{red}{0.615}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
+LINE-1& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
+NetMF& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
+GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
 \hline
 \end{tabular}
 \caption{Link Prediction results using 50\% edges as training data, balanced with negative edges. Blue indicates that our results are better than the original paper, and vice versa.}
@@ -293,11 +278,11 @@ method & \multicolumn{2}{|c|}{BlogCatalog}& \multicolumn{2}{|c|}{Cora}& \multico
 \hline
 & mic. & mac. &mic. & mac.& mic. & mac.& mic. & mac.\\
 \hline
-DeepWalk& \textcolor{red}{\textbf{0.336}}& \textcolor{red}{\textbf{0.195}}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.645}&\textcolor{red}{0.548}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
-Node2vec& \textcolor{red}{0.192}& \textcolor{red}{0.088}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.603}&\textcolor{red}{0.558}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
-LINE-1& \textcolor{red}{0.161}& \textcolor{red}{0.064}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.345}&\textcolor{red}{0.271}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
-NetMF& \textcolor{red}{0.191}& \textcolor{red}{0.091}&\textcolor{red}{0.000}&\textcolor{red}{0.000}& \textcolor{cyan}{\textbf{0.808}}&\textcolor{cyan}{\textbf{0.794}}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
-GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
+DeepWalk& \textcolor{red}{\textbf{0.336}}& \textcolor{red}{\textbf{0.195}}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.645}&\textcolor{red}{0.548}&\textcolor{black}{0.000}&\textcolor{black}{0.000}\\
+Node2vec& \textcolor{red}{0.192}& \textcolor{red}{0.088}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.603}&\textcolor{red}{0.558}&\textcolor{black}{0.000}&\textcolor{black}{0.000}\\
+LINE-1& \textcolor{red}{0.161}& \textcolor{red}{0.064}&\textcolor{red}{0.254}&\textcolor{red}{0.190}&\textcolor{red}{0.345}&\textcolor{red}{0.271}&\textcolor{black}{0.000}&\textcolor{black}{0.000}\\
+NetMF& \textcolor{red}{0.191}& \textcolor{red}{0.091}&\textcolor{cyan}{0.824}&\textcolor{cyan}{0.813}& \textcolor{cyan}{\textbf{0.808}}&\textcolor{cyan}{\textbf{0.794}}&\textcolor{black}{0.571}&\textcolor{black}{0.562}\\
+GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{black}{0.000}&\textcolor{black}{0.000}\\
 \hline
 \end{tabular}
 \caption{Multilabel Node Classification results in terms of Micro-F1 and Macro-F1. All results are mean of 5-fold cross validations. Blue indicates that our results are better than the original paper, and vice versa.}
@@ -345,7 +330,6 @@ GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}&\textcolor{red}{0.000}
 
 
 
-\newpage
 % ================
 \printbibliography
 % ================
