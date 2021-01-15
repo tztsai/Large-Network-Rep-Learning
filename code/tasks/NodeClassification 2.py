@@ -3,14 +3,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 import numpy as np
 
-# Global                                                                          
 SEED = 0
 # EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding_decoded.txt"
 # EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
 # EMBEDDING_PATH = "./test/node2vec_blogcatalog_sort.embed"
 # EMBEDDING_PATH = "./test/Line1embd_second-order.txt"
-EMBEDDING_PATH = "../results/pubmed/pubmed_NetMF.txt"
-LABEL_PATH = "../datasets/pubmed/pubmed_label.txt"
+EMBEDDING_PATH = "results/blogcatalog/blogcatalog_graphsage.txt"
+LABEL_PATH = "datasets/blogcatalog/blogcataloglabel.txt"
 
 class NodeClassification:
     def __init__(self, embedding_path, labels_path):
@@ -28,7 +27,6 @@ class NodeClassification:
     
     def read_labels(self, path):
         labels = []
-        nodes = []
         all_labels = set()
         
         # read labels
@@ -37,14 +35,15 @@ class NodeClassification:
             for line in lines:
                 values = list(map(int, line.split()))
                 x, *y = values
-                nodes.append(x)
-                labels.append(y)
+                labels.append((x, y))
                 all_labels.update(y)
 
+        labels.sort(key = lambda p: p[0])
+
         # tranform to boolean matrix
-        boolean_matrix = np.zeros((len(nodes), len(all_labels)), dtype=np.int)
-        for x, y in zip(nodes, labels):
-            boolean_matrix[x, y] = 1
+        boolean_matrix = np.zeros((len(labels), len(all_labels)), dtype=np.int)
+        for i, (_, y) in enumerate(labels):
+            boolean_matrix[i, y] = 1
 
         print('Successfully read labels from', path)
         return boolean_matrix
@@ -54,6 +53,7 @@ class NodeClassification:
         clf = OneVsRestClassifier(LogisticRegression(random_state=SEED))
         cv = 5
         # report Micro-F1 and Macro-F1 scores
+        res = clf.fit(self.X, self.y)
         ma_scores = cross_val_score(clf, self.X, self.y, cv=cv, scoring='f1_macro')
         mi_scores = cross_val_score(clf, self.X, self.y, cv=cv, scoring='f1_micro')
         return np.mean(ma_scores), np.mean(mi_scores)
@@ -65,4 +65,3 @@ if __name__ == "__main__":
     print("Accurancy for node classification: ")
     print("Micro-F1 score: ", mi_score)
     print("Macro-F1 score: ", ma_score)
-
