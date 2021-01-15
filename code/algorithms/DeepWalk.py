@@ -75,9 +75,10 @@ class RandomWalk:
 class HLogSoftMax:
     """Hierarchical log softmax loss of the graph embedding."""
     
-    def __init__(self, graph, embedding):
+    def __init__(self, graph, leaf_emb, inner_emb):
         self.N = graph.num_nodes
-        self.Z = embedding
+        self.Z1 = leaf_emb
+        self.Z2 = inner_emb
 
         # build a Huffman binary tree from graph nodes
         node_weights = [graph.weight(n) for n in graph.nodes]
@@ -86,14 +87,14 @@ class HLogSoftMax:
     def log_prob(self, context):
         """log p(u|v) where p is the hierarchical softmax function"""
         u, v = context
-        T, Z = self.T, self.Z
+        T, Z1, Z2 = self.T, self.Z1, self.Z2
         lp = 0.
         n = u
         while True:
             p = T.parent[n]
             if p < 0: break
-            s = 1 - T.code[n] * 2
-            x = torch.dot(Z[v], Z[p])
+            s = 1 - T.code[n] * 2  # left child: 1, right child: -1
+            x = torch.dot(Z1[v], Z2[p-self.N])
             lp += torch.sigmoid(s*x).log()
             n = p
         return lp
@@ -113,11 +114,12 @@ class DeepWalk(nn.Module):
         self.G = graph
         
         # embedding tensor
-        self.Z = init_param(2*N-1, D)
+        self.Z1 = init_param(N, D)
+        self.Z2 = init_param(2*N-1, D)
         # 2*N-1 nodes in the binary tree, the first N are graph nodes
         self.to(device)  # use CPU or GPU device
 
-        self.loss = HLogSoftMax(graph, self.Z)
+        self.loss = HLogSoftMax(graph, self.Z1, self.Z2)
         self.opt = optim.Adam(self.parameters(), lr=self.lr)
         self.sampler = RandomWalk(graph)
         
@@ -164,7 +166,7 @@ class DeepWalk(nn.Module):
         
     def embedding(self):
         """The graph embedding matrix."""
-        return self.Z.data.cpu().numpy()[:self.N]
+        return self.Z1.data.cpu().numpy()
 
     def save_embedding(self, path):
         logger.info(f'Saving embedding array to {path}')

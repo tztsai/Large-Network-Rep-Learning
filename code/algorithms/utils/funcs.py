@@ -1,4 +1,5 @@
 import random
+import logging
 from time import time
 import numpy as np
 import torch
@@ -6,9 +7,12 @@ from tqdm import tqdm
 from functools import wraps
 
 
-def pbar(iterable, **kwds):
+def pbar(iterable, log_level=logging.DEBUG, **kwds):
     """Process bar visualization."""
-    return tqdm(iterable, bar_format='\t{l_bar}{bar:20}{r_bar}', **kwds)
+    if logging.root.level > log_level:
+        return iterable
+    else:
+        return tqdm(iterable, bar_format='\t{l_bar}{bar:20}{r_bar}', **kwds)
 
 
 def cos_similarity(x, y):
@@ -35,9 +39,9 @@ def timer(f):
         h, m = divmod(m, 60)
         print("Time cost of '%s': %s%s%s%s" %
               (f.__name__,
-               f'{h}h' if h else '',
-               f'{m}m' if m else '',
-               f'{s}s' if s else '',
+               f'{h}h ' if h else '',
+               f'{m}m ' if m else '',
+               f'{s}s ' if s else '',
                f'{ms}ms'))
         return result
     return wrapped

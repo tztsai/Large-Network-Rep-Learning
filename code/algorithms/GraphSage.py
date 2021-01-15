@@ -93,7 +93,6 @@ class GraphSage(nn.Module):
             try: self.load(model_file)
             except FileNotFoundError: pass
 
-    @timer
     def forward(self, batch):
         """
         Forward propagation of the neural network.
@@ -142,7 +141,7 @@ class GraphSage(nn.Module):
         return self.loss(batch, newZ)
 
     @timer
-    def fit(self, epochs=1000):
+    def fit(self, epochs=10):
         nodes = torch.tensor(self.G.nodes, device=device)
         batches = DataLoader(nodes, batch_size=self.bs)
         losses = []
@@ -152,15 +151,17 @@ class GraphSage(nn.Module):
             logger.info('Epoch: %d' % epoch)
             start_time = time()
             epoch_loss = 0
-
-            for i, batch in enumerate(batches):
-                logger.debug('Batch %d', i)
+            progress = 0
+            
+            for batch in pbar(batches, log_level=logging.INFO):
                 loss = self.forward(batch)
                 loss.backward()
                 epoch_loss += loss
                 self.opt.step()
                 self.opt.zero_grad()
-                logger.debug('Epoch progress: %d%%\n', int(100*i/len(batches)))
+                
+                progress += 100 / len(batches)
+                logger.debug('Epoch progress: %d%%\n', int(progress))
 
             logger.info('Loss = %.3e' % epoch_loss)
             losses.append(epoch_loss)
@@ -212,6 +213,11 @@ if __name__ == "__main__":
         data_path = sys.argv[1]
     except IndexError:
         data_path = 'datasets/example.txt'
+        
+    try:
+        epochs = sys.argv[2]
+    except IndexError:
+        epochs = 30
 
     dataset = data_path.split('/')[-2]
     print('Dataset:', dataset, end='\n\n')
@@ -225,7 +231,7 @@ if __name__ == "__main__":
     model = GraphSage(graph, model_file=model_file)
 
     try:
-        losses = model.fit()
+        losses = model.fit(epochs=epochs)
         plot_loss(losses)
     except KeyboardInterrupt:
         print('Training stopped.')
