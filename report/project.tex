@@ -183,7 +183,7 @@ $$
 \section{Implementation}
 
 \subsection{Datasets}
-\noindent In this part, we introduce the datasets used in our experiment for different tasks. For the Reddit, Youtube and Twitter, due to the limitation of computation resources, it is difficult for us to conduct experiment on these extreme large datasets, so we are unable to present results on them. For node classification, we test the different algorithms on BlogCatalog, Cora, Pubmed, Cocit, Flickr. For link prediction, Blogcatalog, Flikcr, Cora, DBLP-Ci and Epinion were used. The detail of these datasets are summarized in table 2.
+\noindent In this part, we introduce the datasets \cite{nr-aaai15} used in our experiment for different tasks. For the Reddit, Youtube and Twitter, due to the limitation of computation resources, it is difficult for us to conduct experiment on these extreme large datasets, so we are unable to present results on them. For node classification, we test the different algorithms on BlogCatalog, Cora, Pubmed, Cocit, Flickr. For link prediction, Blogcatalog, Flikcr, Cora, DBLP-Ci and Epinion were used. The detail of these datasets are summarized in table 2.
 \begin{table}[H]
     \centering
 \begin{tabular}{c|c|c|c|c|c|c}
@@ -257,8 +257,8 @@ method & BlogCatalog & Cora & PubMed & Lesmis & Facebook\\
 \hline
 DeepWalk& \textcolor{red}{0.433}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
 Node2vec& \textcolor{red}{0.615}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
-LINE-1& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
-NetMF& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
+LINE-1& \textcolor{red}{0.859}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
+NetMF& \textcolor{red}{0.709}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
 GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{black}{0.000}& \textcolor{black}{0.000}\\
 \hline
 \end{tabular}
