@@ -212,7 +212,7 @@ if __name__ == "__main__":
     try:
         data_path = sys.argv[1]
     except IndexError:
-        data_path = 'datasets/example.txt'
+        data_path = 'datasets/pubmed/pubmed_graph.txt'
         
     try:
         epochs = sys.argv[2]

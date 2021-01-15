@@ -11,7 +11,7 @@ import config
 
 logger = logging.getLogger('DeepWalk')
 device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
-# torch.autograd.set_detect_anomaly(True)
+torch.autograd.set_detect_anomaly(True)
 
 
 class RandomWalk:
@@ -38,7 +38,7 @@ class RandomWalk:
         if nodes is None:
             nodes = self.G.nodes
 
-        return list(map(walk, nodes))
+        return map(walk, nodes)
 
 
 class DeepWalk:
@@ -52,15 +52,18 @@ class DeepWalk:
 
     @timer
     def fit(self, iters=10):
-        for i in range(iters):
-            logger.info('Generating walks...')
-            walks = self.randwalk.walk()
+        logger.info('Scanning the graph for %d iterations', iters)
+        
+        walks = []
+        logger.info('Generating walks...')
+        for i in pbar(range(iters), log_level=logging.INFO):
+            walks.extend(self.randwalk.walk())
             
-            logger.info('Fitting embedding...')
-            model = Word2Vec(walks, size=self.D, window=self.ws)
-            self.Z = np.array([
-                model.wv[str(i)] for i in range(self.N)
-            ])
+        logger.info('Fitting embedding...')
+        model = Word2Vec(walks, size=self.D, window=self.ws)
+        self.Z = np.array([
+            model.wv[str(i)] for i in range(self.N)
+        ])
 
     def save_embedding(self, path):
         logger.info(f'Saving embedding array to {path}')
@@ -78,9 +81,9 @@ if __name__ == "__main__":
         data_path = 'datasets/lesmis/lesmis.mtx'
         
     try:
-        num_walks = sys.argv[2]
+        iterations = int(sys.argv[2])
     except IndexError:
-        num_walks = 10
+        iterations = 10
 
     dataset = data_path.split('/')[-2]
     print('Dataset:', dataset, end='\n\n')
@@ -94,7 +97,7 @@ if __name__ == "__main__":
     model = DeepWalk(graph)
 
     try:
-        model.fit(num_walks)
+        model.fit(iterations)
     except KeyboardInterrupt:
         print('Training stopped.')
     finally:
