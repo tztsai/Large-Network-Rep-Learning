@@ -23,7 +23,7 @@ device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
 
 class NegSampling:
     """Negative sampling to compute graph embedding loss."""
-    wl = 5      # walk length
+    wl = 10     # walk length
     ws = 2      # window size
     K = config.NUM_NEG_SAMPLES
 
@@ -74,7 +74,8 @@ class GraphSage(nn.Module):
         self.G = graph
 
         # weight matrices
-        self.W = [init_param(D, 2*D) for _ in range(self.K)]
+        self.W = [nn.Parameter(torch.ones(D, 2*D))
+                  for _ in range(self.K)]
 
         # embedding matrix
         self.Z = torch.rand(self.N, self.D)
@@ -125,8 +126,7 @@ class GraphSage(nn.Module):
         for k in range(1, self.K+1):
             logger.debug('Aggregating context information in layer %d', k)
             for v in B[k]:
-                neighbors = neighbor_sample[v]
-                neighbors_info = [h[k-1][u] for u in neighbors]
+                neighbors_info = [h[k-1][u] for u in neighbor_sample[v]]
                 ha = self.aggregator(neighbors_info)
                 hs = torch.sigmoid(self.W[k-1] @ torch.cat([h[k-1][v], ha]))
                 h[k][v] = normalize(hs, dim=0)
@@ -217,7 +217,7 @@ if __name__ == "__main__":
         data_path = 'datasets/pubmed/pubmed_graph.txt'
         
     try:
-        epochs = sys.argv[2]
+        epochs = int(sys.argv[2])
     except IndexError:
         epochs = 10
 

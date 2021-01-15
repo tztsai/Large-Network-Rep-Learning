@@ -29,8 +29,8 @@ DISTANCE_TYPE = 0 # 0 for common neighbors, 1 for Jaccard's coeff, 2 for AA, 3 f
 # GRAPH_PATH = "./test/blogcatalogedge.txt"
 # LABEL_PATH = "./test/blogcataloglabel.txt"
 
-EMBEDDING_PATH = "../results/blogcatalog/blogcatalog_node2vec.txt"
-GRAPH_PATH = "../datasets/blogcatalog/blogcatalogedge.txt"
+EMBEDDING_PATH = sys.argv[1]
+GRAPH_PATH = sys.argv[2]
 
 
 class LinkPrediction():
@@ -209,9 +209,6 @@ class LinkPrediction():
                     f.write(item[0] + ' ' + item[1] + ' ' + str(int(item[2]['weight'])) + '\n')
             # print(self.data_loader.edgewithweight)
 
-            
-            
-        
 
 
 if __name__ == "__main__":
