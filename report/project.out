@@ -14,12 +14,11 @@
 \BOOKMARK [1][-]{section.4}{Implementation}{}% 14
 \BOOKMARK [2][-]{subsection.4.1}{Datasets}{section.4}% 15
 \BOOKMARK [2][-]{subsection.4.2}{Parameter settings}{section.4}% 16
-\BOOKMARK [2][-]{subsection.4.3}{Hardware and Software}{section.4}% 17
-\BOOKMARK [1][-]{section.5}{Results}{}% 18
-\BOOKMARK [2][-]{subsection.5.1}{Link Prediction \(LP\)}{section.5}% 19
-\BOOKMARK [2][-]{subsection.5.2}{Multilabel Node Classification \(NC\)}{section.5}% 20
-\BOOKMARK [1][-]{section.6}{Discussion}{}% 21
-\BOOKMARK [2][-]{subsection.6.1}{Discussion of Our Findings}{section.6}% 22
-\BOOKMARK [2][-]{subsection.6.2}{Comparison of Results}{section.6}% 23
-\BOOKMARK [2][-]{subsection.6.3}{Discussion about the Original Paper}{section.6}% 24
-\BOOKMARK [1][-]{section.7}{Conclusions}{}% 25
+\BOOKMARK [1][-]{section.5}{Results}{}% 17
+\BOOKMARK [2][-]{subsection.5.1}{Link Prediction \(LP\)}{section.5}% 18
+\BOOKMARK [2][-]{subsection.5.2}{Multilabel Node Classification \(NC\)}{section.5}% 19
+\BOOKMARK [1][-]{section.6}{Discussion}{}% 20
+\BOOKMARK [2][-]{subsection.6.1}{Discussion of Our Findings}{section.6}% 21
+\BOOKMARK [2][-]{subsection.6.2}{Comparison of Results}{section.6}% 22
+\BOOKMARK [2][-]{subsection.6.3}{Discussion about the Original Paper}{section.6}% 23
+\BOOKMARK [1][-]{section.7}{Conclusions}{}% 24
