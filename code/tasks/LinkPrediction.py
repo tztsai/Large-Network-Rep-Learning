@@ -1,6 +1,5 @@
 import sys 
-sys.path.append("..") 
-
+iisys.path.append("..") 
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -26,7 +25,7 @@ DISTANCE_TYPE = 0 # 0 for common neighbors, 1 for Jaccard's coeff, 2 for AA, 3 f
 # LABEL_PATH = "./test/blogcataloglabel.txt"
 
 EMBEDDING_PATH = "../results/lesmis/lesmis_node2vec.txt"
-GRAPH_PATH = "../datasets/lesmis/lesmis.mtx"
+GRAPH_PATH = "../datasets/blogcatalog/blogcatalogedge.txt"
 
 
 class LinkPrediction():
@@ -57,7 +56,9 @@ class LinkPrediction():
 
 
     def preprocess_graph(self, graph):
+        
         # graph partition
+        print('preprocess graph...')
         frac = FRACTION_REMOVE_EDGE
         remove_size = int(frac * len(graph.edges))
         negative_edges = []
@@ -68,12 +69,15 @@ class LinkPrediction():
                 index1 = self.data_loader.node_sampling.draw()
                 index2 = self.data_loader.node_sampling.draw()
                 if index1 == index2:
-                    continue
-                flag = graph.has_edge(self.data_loader.nodedict[index1], self.data_loader.nodedict[index2])
+                    pass
+                else:
+                    flag = graph.has_edge(self.data_loader.nodedict[index1], self.data_loader.nodedict[index2])
             negative_edges.append((self.data_loader.nodedict[index1], self.data_loader.nodedict[index2]))     
 
+        print(111)
         removed_edges = []
         for i in range(remove_size):
+            print(i)
             removed = False
             # remove edge
             while removed == False:
@@ -91,6 +95,7 @@ class LinkPrediction():
         for item in negative_edges:
             testsplit.append([item,-1])
         
+        print(111)
         return graph, testsplit       
     def common_neighbors(self, graph, n1, n2):
         g1 = set()
@@ -225,7 +230,7 @@ class LinkPrediction():
                 true_edge += 1
     
     def prt_graph(self, graph, save_path):
-            
+            print('prt graph...')
             self.data_loader.graph_update(graph)
             with open(save_path, 'w') as f:
                 for item in self.data_loader.edgewithweight:
@@ -241,7 +246,7 @@ if __name__ == "__main__":
     lp = LinkPrediction()
     e, g = lp.read_file(EMBEDDING_PATH, GRAPH_PATH)
     g, testsplit = lp.preprocess_graph(g)
-    lp.prt_graph(g,'g.txt')
-    r = lp.evaluate(g, testsplit, 1)
-    print(r)
+    lp.prt_graph(g,'blogcatalog_train_NetMF.txt')
+    #r = lp.evaluate(g, testsplit, 1)
+    #print(r)
     # lp.get_ROC_AUC_score()

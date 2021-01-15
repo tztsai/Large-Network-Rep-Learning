@@ -1,15 +1,14 @@
-from scipy import linalg, sparse
+import sys 
 import numpy as np
+sys.path.append("..") 
+from scipy import linalg, sparse
 from utils.graph import Graph, read_graph
 
 # Global
 PRINT_RESULT = True
-# SAVE_PATH = "./test/blogcatalog_NetMF_embedding.txt"
-# SAVE_PATH_DECODED = "./test/blogcatalog_NetMF_embedding_decoded.txt"
 
-SAVE_PATH = "./test/lesmis_NetMF.txt"
-SAVE_PATH_DECODED = "./test/lesmis_NetMF_decoded.txt"
-
+SAVE_PATH = "./NetMF.txt"
+SAVE_PATH_DECODED = "./NetMF_decoded.txt"
 
 # Parameters for NetMF
 PARAMETER_T = 10 # window size, 1, 10 for option
@@ -142,14 +141,8 @@ class NetMF():
 
 
 if __name__ == "__main__":
-    #g = read_graph('./datasets/small.txt')
-    #g = read_graph('./datasets/small_undirected_weighted.txt')
-    #g = read_graph('./test/blogcatalogedge.txt')
-    #g = read_graph('./test/NetMF_graph.txt')
-    g = read_graph('./datasets/lesmis/lesmis.mtx')
-    #g = read_graph('./datasets/BlogCatalog.txt')
-    #g = read_graph('./datasets/com-youtube.ungraph.txt')
-    
+    #g = read_graph('../datasets/pubmed/pubmed_graph.txt')
+    g = read_graph('../datasets/cora/cora_graph.txt')   
     nmf = NetMF(g)
     # res_small = nmf.NetMF_small_T(g)
     res_large = nmf.NetMF_large_T(g)
