@@ -44,8 +44,7 @@ class NodeClassification:
         # tranform to boolean matrix
         boolean_matrix = np.zeros((len(labels), len(all_labels)), dtype=np.int)
         for i, p in enumerate(labels):
-            _, y = p
-            boolean_matrix[i, y] = 1
+            boolean_matrix[i, p[1]] = 1
 
         print('Successfully read labels from', path)
         return boolean_matrix
