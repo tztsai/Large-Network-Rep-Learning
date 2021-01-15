@@ -69,7 +69,7 @@ class RandomWalk:
                     edges.append([w[i], w[j]])
 
         logger.debug('Sampled %d context edges.' % len(edges))
-        return np.array(edges)
+        return np.array(edges, dtype=np.int)
     
     
 class HLogSoftMax:
