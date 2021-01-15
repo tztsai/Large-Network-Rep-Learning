@@ -1,6 +1,7 @@
 import random
 import logging
 import sys
+import pdb
 import os
 import numpy as np
 import torch
@@ -46,7 +47,8 @@ class NegSampling:
 
     def __call__(self, batch, new_emb):
         sample = self.S.sample(batch)
-        return -sum(self.log_prob(*ctx, new_emb) for ctx in sample)
+        loss = -sum(self.log_prob(*ctx, new_emb) for ctx in sample)
+        return loss
 
 
 class GraphSage(nn.Module):
@@ -105,7 +107,7 @@ class GraphSage(nn.Module):
         neighbor_sample = {}
 
         # collect all needed nodes for each layer
-        B = [{int(v) for v in batch} for _ in range(self.K+1)]
+        B = [set(map(int, batch)) for _ in range(self.K+1)]
         for k in range(self.K, 0, -1):
             logger.debug('Sampling neighbors in layer %d', k)
             B[k-1].update(B[k])

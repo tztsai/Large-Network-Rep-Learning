@@ -29,13 +29,19 @@ class NodeClassification():
         self.y = np.array(sorted(self.y, key=(lambda x:x[0]), reverse=False))
         return self.X, self.y
     
+<<<<<<< HEAD
     def process_labels(self, label_path):
+=======
+    def read_labels(self, path):
+        labels = []
+>>>>>>> c905a9719d2db7bb0f684d3fa3c37d047f829773
         all_labels = set()
         # read label
         y = []
         name = []
         with open(label_path, 'r') as f:
             lines = f.readlines()
+<<<<<<< HEAD
             for i in range(len(lines)):
                 line = lines[i]
                 values = [int(x.strip()) for x in line.split()]
@@ -45,12 +51,27 @@ class NodeClassification():
                     all_labels.add(value)
             y = np.array(y)
             name = np.array(name)
+=======
+            for line in lines:
+                values = list(map(int, line.split()))
+                x, *y = values
+                labels.append((x, y))
+                all_labels.update(y)
+>>>>>>> c905a9719d2db7bb0f684d3fa3c37d047f829773
+
+        labels.sort(key = lambda p: p[0])
 
         # tranform to boolean matrix
+<<<<<<< HEAD
         boolean_matrix = np.zeros((len(y),len(all_labels)))
         for i in range(len(y)):
             for value in y[i]:
                 boolean_matrix[i][value] = 1
+=======
+        boolean_matrix = np.zeros((len(labels), len(all_labels)), dtype=np.int)
+        for i, p in enumerate(labels):
+            boolean_matrix[i, p[1]] = 1
+>>>>>>> c905a9719d2db7bb0f684d3fa3c37d047f829773
 
         # assemble
         res = np.hstack((name, boolean_matrix))

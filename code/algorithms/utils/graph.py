@@ -8,6 +8,7 @@ from .sampling import alias
 from .funcs import timer
 
 logger = logging.getLogger('Graph')
+random.seed(1)
 
 
 class Graph:
