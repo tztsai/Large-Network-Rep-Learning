@@ -1,15 +1,12 @@
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
+import sys
 import numpy as np
 
 SEED = 0
-# EMBEDDING_PATH = "./test/blogcatalog_NetMF_embedding_decoded.txt"
-# EMBEDDING_PATH = "./test/blogcatalogedge_deepwalk.txt"
-# EMBEDDING_PATH = "./test/node2vec_blogcatalog_sort.embed"
-# EMBEDDING_PATH = "./test/Line1embd_second-order.txt"
-EMBEDDING_PATH = "results/blogcatalog/blogcatalog_graphsage.txt"
-LABEL_PATH = "datasets/blogcatalog/blogcataloglabel.txt"
+EMBEDDING_PATH = sys.argv[1]
+LABEL_PATH = sys.argv[2]
 
 class NodeClassification:
     def __init__(self, embedding_path, labels_path):

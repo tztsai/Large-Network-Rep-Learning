@@ -56,7 +56,7 @@ class GraphSage(nn.Module):
     lr = config.ALPHA       # learning rate
     K = 2                   # maximum search depth, also number of layers
     S = [25, 10]            # neighborhood sample size for each search depth
-    aggregation = 'pool'    # aggregation of neighbors' information
+    aggregation = 'mean'    # aggregation of neighbors' information
 
     def __init__(self, graph: Graph, emb_dim=config.D, model_file=None, device=device):
         """

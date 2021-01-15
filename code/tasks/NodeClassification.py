@@ -2,11 +2,12 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 import numpy as np
+import sys
 
 # Global                                                                          
 SEED = 0
-EMBEDDING_PATH = "../results/chameleon/Chameleon_NetMF.txt"
-LABEL_PATH = "../datasets/chameleon/chameleon_label.txt"
+EMBEDDING_PATH = sys.argv[1]
+LABEL_PATH = sys.argv[2]
 
 class NodeClassification():
     def __init__(self):
