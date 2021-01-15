@@ -1,10 +1,25 @@
-\BOOKMARK [1][-]{section.1}{Abstract}{}% 1
-\BOOKMARK [1][-]{section.2}{Introduction}{}% 2
-\BOOKMARK [1][-]{section.3}{Related Work}{}% 3
-\BOOKMARK [1][-]{section.4}{Task Description}{}% 4
-\BOOKMARK [2][-]{subsection.4.1}{Link Prediction \(LP\)}{section.4}% 5
-\BOOKMARK [2][-]{subsection.4.2}{Multilabel Node Classification \(NC\)}{section.4}% 6
-\BOOKMARK [1][-]{section.5}{Experimental Setup}{}% 7
-\BOOKMARK [1][-]{section.6}{Result and Discussion}{}% 8
-\BOOKMARK [1][-]{section.7}{Conclusions}{}% 9
-\BOOKMARK [1][-]{section.8}{References}{}% 10
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Study Background}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Research Questions}{section.1}% 3
+\BOOKMARK [1][-]{section.2}{Procedure}{}% 4
+\BOOKMARK [1][-]{section.3}{Methods}{}% 5
+\BOOKMARK [2][-]{subsection.3.1}{Algorithm Description}{section.3}% 6
+\BOOKMARK [3][-]{subsubsection.3.1.1}{Random Walk Based Methods}{subsection.3.1}% 7
+\BOOKMARK [3][-]{subsubsection.3.1.2}{Adjacency Based Methods}{subsection.3.1}% 8
+\BOOKMARK [3][-]{subsubsection.3.1.3}{Matrix Factorization Based Methods}{subsection.3.1}% 9
+\BOOKMARK [3][-]{subsubsection.3.1.4}{Neural Network Based Methods}{subsection.3.1}% 10
+\BOOKMARK [2][-]{subsection.3.2}{Task Description}{section.3}% 11
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Link Prediction \(LP\)}{subsection.3.2}% 12
+\BOOKMARK [3][-]{subsubsection.3.2.2}{Multilabel Node Classification \(NC\)}{subsection.3.2}% 13
+\BOOKMARK [1][-]{section.4}{Implementation}{}% 14
+\BOOKMARK [2][-]{subsection.4.1}{Datasets}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.2}{Parameter settings}{section.4}% 16
+\BOOKMARK [2][-]{subsection.4.3}{Hardware and Software}{section.4}% 17
+\BOOKMARK [1][-]{section.5}{Results}{}% 18
+\BOOKMARK [2][-]{subsection.5.1}{Link Prediction \(LP\)}{section.5}% 19
+\BOOKMARK [2][-]{subsection.5.2}{Multilabel Node Classification \(NC\)}{section.5}% 20
+\BOOKMARK [1][-]{section.6}{Discussion}{}% 21
+\BOOKMARK [2][-]{subsection.6.1}{Answers to Research Questions}{section.6}% 22
+\BOOKMARK [2][-]{subsection.6.2}{Comparison of Results}{section.6}% 23
+\BOOKMARK [2][-]{subsection.6.3}{Discussion of Approach, Methodology, and Conclusion}{section.6}% 24
+\BOOKMARK [1][-]{section.7}{Conclusions}{}% 25
