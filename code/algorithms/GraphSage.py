@@ -219,7 +219,7 @@ if __name__ == "__main__":
     try:
         epochs = sys.argv[2]
     except IndexError:
-        epochs = 30
+        epochs = 10
 
     dataset = data_path.split('/')[-2]
     print('Dataset:', dataset, end='\n\n')
