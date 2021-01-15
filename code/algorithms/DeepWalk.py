@@ -69,7 +69,7 @@ class RandomWalk:
                     edges.append([w[i], w[j]])
 
         logger.debug('Sampled %d context edges.' % len(edges))
-        return torch.tensor(edges, device=device)
+        return np.array(edges)
     
     
 class HLogSoftMax:
