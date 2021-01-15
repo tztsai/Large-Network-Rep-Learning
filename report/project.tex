@@ -179,7 +179,7 @@ $$
 \noindent where $T$ is the window size, $r$ is the walk length and $k$ is the number of negative samples in DeepWalk. For small window size $T$, we first compute the DeepWalk matrix $M$, and then factorize (perform SVD) to get the network embedding. For large window size $T$, it is not feasible to directly compute the DeepWalk matrix $M$ as the time complexity can be too high. A solution to this is to approximate the DeepWalk matrix $M$ and show its low-rank nature by using the relationship of  $M$ with the normalized graph Laplacian.
 
 \subsubsection{Neural Network Based Methods} % GraphSage
-
+GraphSage is a framework of graph neural network that leverages neighborhood aggregation to inductively learn the topological structure of each node's neighborhood and incorporate them into the node embeddings. A variety of \emph{aggregator functions} can be used in the GraphSage framework. The simplest one is the \textit{mean} function, which aggregates the neighborhood information by taking the mean of the embedding of each neighbor. 
 
 \subsection{Task Description}
 
@@ -198,7 +198,7 @@ $$
 
 \subsection{Datasets}
 \noindent In this part, we introduce the datasets used in our experiment for different tasks. For the Reddit, Youtube and Twitter, due to the limitation of computation resources, it is difficult for us to conduct experiment on these extreme large datasets, so we are unable to present results on them. For node classification, we test the different algorithms on BlogCatalog, Cora, Pubmed, Cocit, Flickr. For link prediction, Blogcatalog, Flikcr, Cora, DBLP-Ci and Epinion were used. The detail of these datasets are summarized in table 2.
-\begin{table}[]
+\begin{table}[H]
     \centering
 \begin{tabular}{c|c|c|c|c|c|c}
 \toprule  
@@ -214,24 +214,28 @@ $|E|$ &333k & 5.4k &44k & 195k &49k &508k\\
 \end{table}
 
 
+
+
+
 \subsection{Parameter settings}
-Most of the parameters are the same as the parameters in [1]. Part of them are modified due to some special reasons.
-\begin{table}[]
+\noindent Most of the parameters are the same as the parameters in \cite{1}. Part of them are modified due to some special reasons.
+\begin{table}[H]
     \centering
-\begin{tabular}{c|c|c|c|c|c|c}
+\begin{tabular}{c|c|c|c}
 \toprule  
-& BlogCatalog& Cora & Pubmed& Cocit &DBLP-Ci &Epinion\\
+Parameter& Value& Parameter &Value\\
 \midrule  
-Category & SN& Citation&Citation&Citation&Citation &SN\\
-Type& undir& dir & dir & dir & dir & dir\\
-$|V|$ &10k &2.7k &19k &44k &12.5k & 75k\\
-$|E|$ &333k & 5.4k &44k & 195k &49k &508k\\
+Embedding dimension d & 128& Walk length t&40\\
+Number of Walk r& 80& Window size w& 10\\
+Negative Sample Size ns & 5& LINE iteration& 300000\\
+Number of Eigenpairs h & 256& NODE2VEC p,q& 0.25,4\\
 \bottomrule 
 \end{tabular}
 \caption{Parameters we used and the corresponding values.}
 \end{table}
+\noindent The iteration number for LINE is reduced from 10 billion to 300000, mainly because it is too time-consuming and we cannot get a result in time by our hardware.
 
-The iteration number for LINE is reduced from T=10 billion to 300000, mainly because it is too time-consuming and we cannot can a result in time.
+
 
 \subsection{Hardware and Software}
 
@@ -258,19 +262,19 @@ The iteration number for LINE is reduced from T=10 billion to 300000, mainly bec
 % accuracy
 % convergence speed
 
-\noindent Here we demonstrate the result for link prediction. We evaluate the five methods mentioned above on four datasets: BlogCatalog, Lesmis (additional) and Facebook (additional).
+\noindent Here we demonstrate the result for link prediction. We evaluate the five methods mentioned above on four datasets: BlogCatalog, Cora, Lesmis (additional) and Facebook (additional).
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|}
 \hline
-method & BlogCatalog & PubMed & Lesmis & Facebook\\
+method & BlogCatalog & Cora & PubMed & Lesmis & Facebook\\
 \hline
-DeepWalk& 0.01& 0.01& 0.01& 0.01\\
-Node2vec& 0.01& 0.01& 0.01& 0.01\\
-LINE-1& 0.01& 0.01& 0.01& 0.01\\
-NetMF& 0.01& 0.01& 0.01& 0.01\\
-GraphSage& 0.01& 0.01& 0.01& 0.01\\
+DeepWalk& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
+Node2vec& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
+LINE-1& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
+NetMF& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
+GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}& \textcolor{red}{0.000}\\
 \hline
 \end{tabular}
 \caption{Link Prediction results using 50\% edges as training data, balanced with negative edges. Blue indicates that our results are better than the original paper, and vice versa.}
@@ -279,21 +283,21 @@ GraphSage& 0.01& 0.01& 0.01& 0.01\\
 
 \subsection{Multilabel Node Classification (NC)}
 
-\noindent Here we demonstrate the result for Multilabel Node Classification. We evaluate the five methods mentioned above on three datasets: BlogCatalog, PubMed and Chameleon (additional). In most cases we achieved lower scores than that of the original paper. blablabla
+\noindent Here we demonstrate the result for Multilabel Node Classification. We evaluate the five methods mentioned above on three datasets: BlogCatalog, Cora, PubMed and Chameleon (additional). In most cases we achieved lower scores than that of the original paper. blablabla
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|c|c|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
 \hline
-method & \multicolumn{2}{|c|}{BlogCatalog}& \multicolumn{2}{|c|}{PubMed} & \multicolumn{2}{|c|}{Chameleon}\\
+method & \multicolumn{2}{|c|}{BlogCatalog}& \multicolumn{2}{|c|}{Cora}& \multicolumn{2}{|c|}{PubMed} & \multicolumn{2}{|c|}{Chameleon}\\
 \hline
-& mic. & mac. &mic. & mac.&mic. & mac.\\
+& mic. & mac. &mic. & mac.& mic. & mac.& mic. & mac.\\
 \hline
-DeepWalk& \textcolor{red}{\textbf{0.336}}& \textcolor{red}{\textbf{0.195}}&\textcolor{red}{0.645}&\textcolor{red}{0.548}&0.001&0.001\\
-Node2vec& \textcolor{red}{0.192}& \textcolor{red}{0.088}&\textcolor{red}{0.603}&\textcolor{red}{0.558}&0.001&0.001\\
-LINE-1& \textcolor{red}{0.161}& \textcolor{red}{0.064}&0.001&0.001&0.001&0.001\\
-NetMF& \textcolor{red}{0.191}& \textcolor{red}{0.091}& \textcolor{cyan}{\textbf{0.808}}&\textcolor{cyan}{\textbf{0.794}}&0.001&0.001\\
-GraphSage& 0.001& 0.001&0.001&0.001&0.001&0.001\\
+DeepWalk& \textcolor{red}{\textbf{0.336}}& \textcolor{red}{\textbf{0.195}}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.645}&\textcolor{red}{0.548}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
+Node2vec& \textcolor{red}{0.192}& \textcolor{red}{0.088}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.603}&\textcolor{red}{0.558}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
+LINE-1& \textcolor{red}{0.161}& \textcolor{red}{0.064}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.345}&\textcolor{red}{0.271}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
+NetMF& \textcolor{red}{0.191}& \textcolor{red}{0.091}&\textcolor{red}{0.000}&\textcolor{red}{0.000}& \textcolor{cyan}{\textbf{0.808}}&\textcolor{cyan}{\textbf{0.794}}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
+GraphSage& \textcolor{red}{0.000}& \textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}&\textcolor{red}{0.000}\\
 \hline
 \end{tabular}
 \caption{Multilabel Node Classification results in terms of Micro-F1 and Macro-F1. All results are mean of 5-fold cross validations. Blue indicates that our results are better than the original paper, and vice versa.}

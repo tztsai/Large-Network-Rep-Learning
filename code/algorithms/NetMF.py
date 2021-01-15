@@ -141,8 +141,7 @@ class NetMF():
 
 
 if __name__ == "__main__":
-    #g = read_graph('../datasets/pubmed/pubmed_graph.txt')
-    g = read_graph('../datasets/cora/cora_graph.txt')   
+    g = read_graph('../datasets/blogcatalog/blogcatalogedge.txt')   
     nmf = NetMF(g)
     # res_small = nmf.NetMF_small_T(g)
     res_large = nmf.NetMF_large_T(g)
