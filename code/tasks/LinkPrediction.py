@@ -9,9 +9,14 @@ import random
 # from algorithms import NetMF
 from sklearn.metrics import roc_auc_score
 from algorithms.utils.txtGraphReader import txtGreader 
+from algorithms.utils.funcs import pbar
+from sklearn.metrics.pairwise import cosine_similarity
 #from gae.preprocessing import mask_test_edges
 
-random.seed(1)
+import pdb
+def D(): pdb.set_trace()
+
+# random.seed(1)
 # Global                                                                          
 FRACTION_REMOVE_EDGE = 0.5
 K_TRAINING = 2 # 
@@ -24,7 +29,7 @@ DISTANCE_TYPE = 0 # 0 for common neighbors, 1 for Jaccard's coeff, 2 for AA, 3 f
 # GRAPH_PATH = "./test/blogcatalogedge.txt"
 # LABEL_PATH = "./test/blogcataloglabel.txt"
 
-EMBEDDING_PATH = "../results/lesmis/lesmis_node2vec.txt"
+EMBEDDING_PATH = "../results/blogcatalog/blogcatalog_node2vec.txt"
 GRAPH_PATH = "../datasets/blogcatalog/blogcatalogedge.txt"
 
 
@@ -61,32 +66,33 @@ class LinkPrediction():
         print('preprocess graph...')
         frac = FRACTION_REMOVE_EDGE
         remove_size = int(frac * len(graph.edges))
+        print('remove size: ' + str(remove_size))
         negative_edges = []
+        print('negative sampling...')
         for i in range(remove_size):
             # sample negative edges according to weight
             flag = True
             while flag:
                 index1 = self.data_loader.node_sampling.draw()
                 index2 = self.data_loader.node_sampling.draw()
-                if index1 == index2:
-                    pass
-                else:
+                if not index1 == index2:   
                     flag = graph.has_edge(self.data_loader.nodedict[index1], self.data_loader.nodedict[index2])
             negative_edges.append((self.data_loader.nodedict[index1], self.data_loader.nodedict[index2]))     
 
-        print(111)
-        removed_edges = []
-        for i in range(remove_size):
-            print(i)
-            removed = False
+        removed_edges = set()
+        all_edges = list(graph.edges)
+        print('remove edges...')
+        for _ in pbar(range(remove_size)):
             # remove edge
-            while removed == False:
-                cur_e = random.sample(list(graph.edges), 1)[0]
+            while True:
+                # import pdb; pdb.set_trace()
+                u, v = e = random.choice(all_edges)
+                if e in removed_edges: continue
                 # check if isolated
-                if graph.degree[cur_e[0]] != 1 and graph.degree[cur_e[1]] != 1:
-                    graph.remove_edge(cur_e[0], cur_e[1]) # update dataloader, data_loader.graph_update(graph)
-                    removed_edges.append(cur_e)
-                    removed = True
+                if graph.degree[u] > 1 and graph.degree[v] > 1:
+                    graph.remove_edge(u, v) # update dataloader, data_loader.graph_update(graph)
+                    removed_edges.add(e)
+                    break
         # balance with negative edges
         # assemble test split
         testsplit = []
@@ -95,74 +101,27 @@ class LinkPrediction():
         for item in negative_edges:
             testsplit.append([item,-1])
         
-        print(111)
         return graph, testsplit       
+        
     def common_neighbors(self, graph, n1, n2):
-        g1 = set()
-        g2 = set()
-        for edge in graph.edges:
-            # cal neighbors
-            if n1 == edge[0]:
-                g1.add(edge[1])
-            elif n1 == edge[1]:
-                g1.add(edge[0])
-
-            # cal neighbors
-            if n2 == edge[0]:
-                g2.add(edge[1])
-            elif n2 == edge[1]:
-                g2.add(edge[0])
-
+        N1 = set(graph.neighbors(n1))
+        N2 = set(graph.neighbors(n2))
         return len(g1 & g2)
 
     def jaccards_coefficient(self, graph, n1, n2):
-        g1 = set()
-        g2 = set()
-        for edge in graph.edges:
-            # cal neighbors
-            if n1 == edge[0]:
-                g1.add(edge[1])
-            elif n1 == edge[1]:
-                g1.add(edge[0])
-
-            # cal neighbors
-            if n2 == edge[0]:
-                g2.add(edge[1])
-            elif n2 == edge[1]:
-                g2.add(edge[0])
-
-        return len(g1 & g2) / len(g1 | g2)
+        N1 = set(graph.neighbors(n1))
+        N2 = set(graph.neighbors(n2))
+        return len(N1 & N2) / len(N1 | N2)
 
     def adamic_adar_score(self, graph, n1, n2):
-        g1 = set()
-        g2 = set()
-        for edge in graph.edges:
-            # cal neighbors
-            if n1 == edge[0]:
-                g1.add(edge[1])
-            elif n1 == edge[1]:
-                g1.add(edge[0])
-
-            # cal neighbors
-            if n2 == edge[0]:
-                g2.add(edge[1])
-            elif n2 == edge[1]:
-                g2.add(edge[0])
-        # construct z
-        Z = g1 & g2
-        res = 0
-        gz = set()
-        for z in Z:
-            for edge in graph.edges:
-                # cal neighbors
-                if z == edge[0]:
-                    gz.add(edge[1])
-                elif z == edge[1]:
-                    gz.add(edge[0])
-            res += 1/np.log(len(gz))
-        return res
+        N1 = set(graph.neighbors(n1))
+        N2 = set(graph.neighbors(n2))
+        return sum(1/np.log(len(set(graph.neighbors(n))))
+                   for n in N1 & N2)
 
     def preferential_attachment(self, graph, n1, n2):
+        N1 = set(graph.neighbors(n1))
+        N2 = set(graph.neighbors(n2))
         g1 = set()
         g2 = set()
         for edge in graph.edges:
@@ -180,15 +139,28 @@ class LinkPrediction():
 
         return len(g1) * len(g2)
 
-    def evaluate(self, graph, testsplit, simi=0):
-
+    def evaluate(self, testsplit, embedding_path, simi=0):
+        embed_dict = {}
         ranked_dict = {}
+        with open(embedding_path) as f:
+            lines = [line[:-1] for line in f.readlines()]
+            for line in lines:
+                no, embedding = line.split(' ', 1)
+                embedding = embedding[:-1]
+                embedding = [float(i) for i in embedding.split(' ')]
+                embed_dict[no] = np.array([embedding])
+                     
 
-        for edge, b in testsplit:
+        for edge, b in pbar(testsplit):
             if simi == 0:
-                dist = self.common_neighbors(graph, edge[0], edge[1])
+                dist = self.common_neighbors(graph, edge[0], edge[1])[0][0]
             elif simi == 1:
-                dist = self.jaccards_coefficient(graph, edge[0], edge[1])
+                # print(embed_dict[edge[0]])
+                # quit()
+
+                dist = cosine_similarity(embed_dict[edge[0]], embed_dict[edge[1]])[0][0]
+                dist = (dist +1) / 2
+
             elif  simi == 2:
                 dist = self.adamic_adar_score(graph, edge[0], edge[1])
             else:
@@ -198,18 +170,18 @@ class LinkPrediction():
         
         ranked_dict = dict(sorted(ranked_dict.items(), key=lambda rank_dict: rank_dict[1], reverse=True))
 
-        y_pred = [edge[2] for edge in ranked_dict.keys()][:int(len(ranked_dict)/2)]
 
         pos_score = []
         neg_socre = []
+
         for edeg, score in ranked_dict.items():
             if edeg[2] == 1:
                 pos_score.append(score)
             else:
                 neg_socre.append(score)
-
-        preds_all = np.hstack([pos_score, neg_socre])
-        labels_all = np.hstack([np.ones(len(pos_score)), np.zeros(len(neg_socre))])
+        # print(len(neg_socre))
+        preds_all = np.hstack((pos_score, neg_socre))
+        labels_all = np.hstack((np.ones(len(pos_score)), np.zeros(len(neg_socre))))
         roc_score = roc_auc_score(labels_all, preds_all)        
 
         return roc_score        
@@ -246,7 +218,8 @@ if __name__ == "__main__":
     lp = LinkPrediction()
     e, g = lp.read_file(EMBEDDING_PATH, GRAPH_PATH)
     g, testsplit = lp.preprocess_graph(g)
-    lp.prt_graph(g,'blogcatalog_train_NetMF.txt')
+    r = lp.evaluate(testsplit, EMBEDDING_PATH,1)
+    print(r)
     #r = lp.evaluate(g, testsplit, 1)
     #print(r)
     # lp.get_ROC_AUC_score()
