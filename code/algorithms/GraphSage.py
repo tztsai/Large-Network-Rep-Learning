@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from time import time
 from utils.graph import Graph, read_graph
 from utils.funcs import *
-from utils.visualize import plot_loss
+from utils.visualize import plot_loss, plot_adj
 from DeepWalk import RandomWalk
 import config
 
@@ -40,8 +40,8 @@ class NegSampling:
         pos_lp = torch.sigmoid(Z(u) @ Z(v)).log()
         neg_lp = torch.tensor(0.)
         for _ in range(self.K):
-            vn = self.G.noise_sample()
-            neg_lp += torch.sigmoid(-Z(u) @ Z(vn)).log()
+            w = self.G.noise_sample()
+            neg_lp += torch.sigmoid(-Z(u) @ Z(w)).log()
 
         return pos_lp + neg_lp
 
@@ -74,16 +74,17 @@ class GraphSage(nn.Module):
         self.G = graph
 
         # weight matrices
-        self.W = [nn.Parameter(torch.ones(D, 2*D))
-                  for _ in range(self.K)]
+        self.W = [init_param(D, 2*D) for _ in range(self.K)]
 
         # embedding matrix
-        self.Z = torch.rand(self.N, self.D)
+        self.Z = normalize(torch.rand(self.N, self.D), dim=0)
 
         self.to(device)
 
         self.loss = NegSampling(self.G, self.Z)
         self.opt = optim.Adam(self.W, lr=self.lr)
+        
+        self._default_feature = torch.ones(self.D) / self.D
         
         if self.aggregation == 'mean':
             self.aggregator = MeanAggregator()
@@ -118,22 +119,23 @@ class GraphSage(nn.Module):
                     v, self.G.sample_neighbors(v, s))
                 B[k-1].update(neighbors)
 
-        # new embeddings
+        # node information
         h = [{} for k in range(self.K+1)]
-        h[0].update((v, self.Z[v]) for v in B[0])
+        
+        # use current embedding as input
+        for v in B[0]: h[0][v] = self.Z[v]
         
         # aggregate information layer by layer
         for k in range(1, self.K+1):
             logger.debug('Aggregating context information in layer %d', k)
             for v in B[k]:
-                neighbors_info = [h[k-1][u] for u in neighbor_sample[v]]
-                ha = self.aggregator(neighbors_info)
-                hs = torch.sigmoid(self.W[k-1] @ torch.cat([h[k-1][v], ha]))
-                h[k][v] = normalize(hs, dim=0)
+                hn = self.aggregator([h[k-1][u] for u in neighbor_sample[v]])
+                hc = torch.cat([h[k-1][v], hn])
+                h[k][v] = normalize(torch.sigmoid(self.W[k-1] @ hc), dim=0)
                 
         # gather updated embeddings
-        newZ = h[1]
-        for k in range(2, self.K+1):
+        newZ = {}
+        for k in range(1, self.K+1):
             newZ.update(h[k])
 
         for v in newZ:
@@ -161,6 +163,9 @@ class GraphSage(nn.Module):
                 epoch_loss += loss
                 self.opt.step()
                 self.opt.zero_grad()
+                
+                # plot_adj(self.Z)
+                # print(self.W[0][:5,:5])
                 
                 progress += 100 / len(batches)
                 logger.debug('Epoch progress: %d%%\n', int(progress))
@@ -214,7 +219,7 @@ if __name__ == "__main__":
     try:
         data_path = sys.argv[1]
     except IndexError:
-        data_path = 'datasets/pubmed/pubmed_graph.txt'
+        data_path = 'datasets/lesmis/lesmis.mtx'
         
     try:
         epochs = int(sys.argv[2])

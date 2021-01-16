@@ -15,7 +15,7 @@ def pbar(iterable, log_level=logging.DEBUG, **kwds):
         return tqdm(iterable, bar_format='\t{l_bar}{bar:20}{r_bar}', **kwds)
 
 
-def cos_similarity(x, y):
+def cos_sim(x, y):
     return (x@y) / np.sqrt((x@x) * (y@y))
 
 
