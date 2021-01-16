@@ -52,11 +52,11 @@ class NegSampling:
 
 
 class GraphSage(nn.Module):
-    bs = 128                # batch size
+    bs = 32                 # batch size
     lr = config.ALPHA       # learning rate
     K = 2                   # maximum search depth, also number of layers
     S = [25, 10]            # neighborhood sample size for each search depth
-    aggregation = 'mean'    # aggregation of neighbors' information
+    aggregation = 'pool'    # aggregation of neighbors' information
 
     def __init__(self, graph: Graph, emb_dim=config.D, model_file=None, device=device):
         """
@@ -77,12 +77,15 @@ class GraphSage(nn.Module):
         self.W = [init_param(D, 2*D) for _ in range(self.K)]
 
         # embedding matrix
-        self.Z = normalize(torch.rand(self.N, self.D), dim=0)
+        self.Z = torch.empty(self.N, self.D)
+        
+        # feature matrix (uninformed)
+        self.F = torch.ones(self.N, self.D)
 
         self.to(device)
 
         self.loss = NegSampling(self.G, self.Z)
-        self.opt = optim.Adam(self.W, lr=self.lr)
+        self.opt = optim.Adam(self.W + [self.F], lr=self.lr)
         
         self._default_feature = torch.ones(self.D) / self.D
         
@@ -122,8 +125,8 @@ class GraphSage(nn.Module):
         # node information
         h = [{} for k in range(self.K+1)]
         
-        # use current embedding as input
-        for v in B[0]: h[0][v] = self.Z[v]
+        # use node features as input
+        for v in B[0]: h[0][v] = self.F[v]
         
         # aggregate information layer by layer
         for k in range(1, self.K+1):
