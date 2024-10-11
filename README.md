@@ -1,8 +1,4 @@
-## DD2434 project
-
-Authors: Jiaming Huang, Tianzhang Cai, Wenhao Luo, Zhengjie Ji
-
-Project -- Large Network representation learning
+## DD2434 project: Large Network representation learning
 
 Paper:
 
